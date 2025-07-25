@@ -1,0 +1,34 @@
+-- return {
+--   'hrsh7th/nvim-cmp',
+--   dependencies = {
+--     'hrsh7th/cmp-nvim-lsp', -- Completion source for LSP
+--     'hrsh7th/cmp-buffer', -- Completion from buffer
+--     'hrsh7th/cmp-path', -- File path completions
+--     'hrsh7th/cmp-cmdline', -- Command-line completions
+--     'L3MON4D3/LuaSnip', -- Snippet engine (required)
+--     'saadparwaiz1/cmp_luasnip', -- Snippet completion
+--   },
+--   config = function()
+--     local cmp = require 'cmp'
+--     cmp.setup {
+--       snippet = {
+--         expand = function(args)
+--           require('luasnip').lsp_expand(args.body)
+--         end,
+--       },
+--       mapping = cmp.mapping.preset.insert {
+--         ['<C-n>'] = cmp.mapping.select_next_item(),
+--         ['<C-p>'] = cmp.mapping.select_prev_item(),
+--         ['<C-y>'] = cmp.mapping.confirm { select = true },
+--         ['<C-Space>'] = cmp.mapping.complete(),
+--       },
+--       sources = cmp.config.sources({
+--         { name = 'nvim_lsp' },
+--         { name = 'luasnip' },
+--       }, {
+--         { name = 'buffer' },
+--       }),
+--     }
+--   end,
+-- }
+return {}
