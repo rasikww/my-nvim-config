@@ -209,7 +209,7 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 
 -- My key maps
 vim.keymap.set('n', '<leader>bd', ':bdelete<CR>', { desc = 'Close current buffer' })
-vim.keymap.set('n', '<leader>br', ':BufferlineCloseRight<CR>', { desc = 'Close buffers to the right' })
+vim.keymap.set('n', '<leader>br', ':BufferLineCloseRight<CR>', { desc = 'Close buffers to the right' })
 vim.keymap.set('n', '<S-Tab>', '<C-^>', { desc = 'Toggle last buffer' })
 vim.keymap.set('n', '<leader>bn', ':bnext<CR>', { desc = 'Next buffer' })
 vim.keymap.set('n', '<leader>bp', ':bprev<CR>', { desc = 'Prev buffer' })
