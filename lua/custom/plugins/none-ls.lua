@@ -4,7 +4,7 @@ return {
     event = 'VeryLazy',
     dependencies = { 'davidmh/cspell.nvim' },
     opts = function(_, opts)
-      local cspell = require 'cspell'
+      local cspell = require 'cspell' -- NOTE: must install cspell using npm -g
 
       opts.sources = opts.sources or {}
 
