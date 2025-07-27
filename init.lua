@@ -210,9 +210,9 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- My key maps
 vim.keymap.set('n', '<leader>bd', ':bdelete<CR>', { desc = 'Close current buffer' })
 vim.keymap.set('n', '<leader>br', ':BufferLineCloseRight<CR>', { desc = 'Close buffers to the right' })
+vim.keymap.set('n', '<leader>bl', ':BufferLineCloseLeft<CR>', { desc = 'Close buffers to the left' })
+vim.keymap.set('n', '<leader>bp', ':BufferLinePick<CR>', { desc = 'Pick buffer' })
 vim.keymap.set('n', '<S-Tab>', '<C-^>', { desc = 'Toggle last buffer' })
-vim.keymap.set('n', '<leader>bn', ':bnext<CR>', { desc = 'Next buffer' })
-vim.keymap.set('n', '<leader>bp', ':bprev<CR>', { desc = 'Prev buffer' })
 vim.keymap.set('i', 'jj', '<Esc>', { noremap = true, silent = true })
 vim.keymap.set('i', 'kk', '<Esc>', { noremap = true, silent = true })
 vim.keymap.set('v', 'J', ":move '>+1<CR>gv=gv") -- Move selected line(s) down
@@ -435,11 +435,16 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          mappings = {
+            n = {
+              ['d'] = require('telescope.actions').delete_buffer,
+            }, -- n
+            i = {
+              ['<c-d>'] = require('telescope.actions').delete_buffer,
+            }, -- i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          },
+        },
         -- pickers = {}
         extensions = {
           ['ui-select'] = {
