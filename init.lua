@@ -230,6 +230,17 @@ vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
+vim.api.nvim_create_autocmd('BufWritePre', {
+  callback = function()
+    vim.lsp.buf.format {
+      filter = function(client)
+        return client.name == 'null-ls'
+      end,
+      timeout_ms = 2000,
+    }
+  end,
+})
+
 -- Visual line at 80 characters
 vim.opt.colorcolumn = '80'
 
