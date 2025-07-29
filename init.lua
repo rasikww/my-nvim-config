@@ -1,5 +1,6 @@
 --[[
 --
+--
 
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
@@ -1084,3 +1085,33 @@ require('lazy').setup({
 })
 
 -- vim: ts=2 sts=2 sw=2 et
+--
+-- Function to get visual selection text
+local function get_visual_selection()
+  local _, csrow, cscol, _ = unpack(vim.fn.getpos "'<")
+  local _, cerow, cecol, _ = unpack(vim.fn.getpos "'>")
+
+  if csrow == cerow then
+    return vim.fn.getline(csrow):sub(cscol, cecol)
+  end
+
+  local lines = vim.fn.getline(csrow, cerow)
+  lines[1] = lines[1]:sub(cscol)
+  lines[#lines] = lines[#lines]:sub(1, cecol)
+  return table.concat(lines, '\n')
+end
+
+-- Define a command to insert console.log of visual selection
+vim.api.nvim_create_user_command('InsertConsoleLogVisual', function()
+  local selected = get_visual_selection()
+  if selected == '' then
+    vim.notify('No selection detected', vim.log.levels.WARN)
+    return
+  end
+  local log_line = "console.log('" .. selected .. ":', " .. selected .. ');'
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  vim.api.nvim_buf_set_lines(0, row, row, false, { log_line })
+end, {})
+
+-- Keymap for visual mode to insert log
+vim.keymap.set('v', '<leader>l', ':<C-u>InsertConsoleLogVisual<CR>', { desc = 'Log selected text', silent = true })
