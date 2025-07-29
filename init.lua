@@ -230,16 +230,25 @@ vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
+-- conform format
 vim.api.nvim_create_autocmd('BufWritePre', {
-  callback = function()
-    vim.lsp.buf.format {
-      filter = function(client)
-        return client.name == 'null-ls'
-      end,
-      timeout_ms = 2000,
-    }
+  pattern = '*',
+  callback = function(args)
+    require('conform').format { bufnr = args.buf }
   end,
 })
+
+-- null-ls/ none-ls format
+-- vim.api.nvim_create_autocmd('BufWritePre', {
+--   callback = function()
+--     vim.lsp.buf.format {
+--       filter = function(client)
+--         return client.name == 'null-ls'
+--       end,
+--       timeout_ms = 2000,
+--     }
+--   end,
+-- })
 
 -- Visual line at 80 characters
 vim.opt.colorcolumn = '80'
@@ -818,6 +827,7 @@ require('lazy').setup({
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
