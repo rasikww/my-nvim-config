@@ -250,6 +250,30 @@ vim.api.nvim_create_autocmd('BufWritePre', {
 --   end,
 -- })
 
+-- wrap selection with characters
+vim.api.nvim_create_user_command('Wrap', function()
+  local chars = vim.fn.input 'Enter surrounding chars (e.g., "", [], <>): '
+  if #chars ~= 2 then
+    vim.notify('Please enter exactly 2 characters', vim.log.levels.WARN)
+    return
+  end
+
+  -- Get visual selection bounds
+  local start_line, start_col = unpack(vim.api.nvim_buf_get_mark(0, '<'))
+  local end_line, end_col = unpack(vim.api.nvim_buf_get_mark(0, '>'))
+
+  -- Adjust for end-of-line cases
+  end_col = end_col + 1
+
+  -- Apply the wrapping
+  vim.api.nvim_buf_set_text(0, start_line - 1, start_col, end_line - 1, end_col, {
+    chars:sub(1, 1) .. vim.api.nvim_buf_get_text(0, start_line - 1, start_col, end_line - 1, end_col, {})[1] .. chars:sub(2, 2),
+  })
+end, { range = true })
+
+-- Keymap for visual mode wrapping
+vim.keymap.set('v', '<leader>w', ':Wrap<CR>', { silent = true })
+
 -- Visual line at 80 characters
 vim.opt.colorcolumn = '80'
 
