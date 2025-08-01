@@ -486,6 +486,18 @@ require('lazy').setup({
         --  All the info you're looking for is in `:help telescope.setup()`
         --
         defaults = {
+          layout_strategy = 'vertical',
+          layout_config = {
+            prompt_position = 'bottom', -- prompt at the bottom
+            width = 0.95,
+            height = 0.95,
+            preview_cutoff = 1, -- always show preview (important)
+            vertical = {
+              width = 0.95,
+              height = 0.95,
+              preview_height = 0.5, -- preview takes top half
+            },
+          },
           mappings = {
             n = {
               ['d'] = require('telescope.actions').delete_buffer,
@@ -509,6 +521,10 @@ require('lazy').setup({
 
                 vim.cmd('edit ' .. escaped_path)
               end,
+              ['<C-j>'] = actions.preview_scrolling_down,
+              ['<C-k>'] = actions.preview_scrolling_up,
+              ['<C-h>'] = actions.preview_scrolling_left,
+              ['<C-l>'] = actions.preview_scrolling_right,
             }, -- i = { ['<c-enter>'] = 'to_fuzzy_refine' },
           },
         },
