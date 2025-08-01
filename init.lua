@@ -478,6 +478,9 @@ require('lazy').setup({
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
+      local actions = require 'telescope.actions'
+      local action_state = require 'telescope.actions.state'
+
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
@@ -489,10 +492,38 @@ require('lazy').setup({
             }, -- n
             i = {
               ['<c-d>'] = require('telescope.actions').delete_buffer,
+              --this fixes nextjs "src/app/(home)/layout.tsx"
+              --originaly it will take it as "src/app(home)/layout.tsx"
+              ['<CR>'] = function(prompt_bufnr)
+                local entry = action_state.get_selected_entry()
+                actions.close(prompt_bufnr)
+
+                if not entry or not (entry.path or entry.filename) then
+                  print 'Invalid file entry'
+                  return
+                end
+
+                local raw_path = entry.path or entry.filename
+                local fixed_path = raw_path:gsub('\\', '/')
+                local escaped_path = vim.fn.fnameescape(fixed_path)
+
+                vim.cmd('edit ' .. escaped_path)
+              end,
             }, -- i = { ['<c-enter>'] = 'to_fuzzy_refine' },
           },
         },
         -- pickers = {}
+        pickers = {
+          find_files = {
+            find_command = {
+              'rg',
+              '--files',
+              '--hidden',
+              '--glob',
+              '!.git/',
+            },
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -1116,3 +1147,7 @@ end, {})
 
 -- Keymap for visual mode to insert log
 vim.keymap.set('v', '<leader>l', ':<C-u>InsertConsoleLogVisual<CR>', { desc = 'Log selected text', silent = true })
+
+--keymap to save in edit mode
+vim.keymap.set('i', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
+vim.keymap.set('n', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
