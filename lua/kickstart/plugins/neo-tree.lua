@@ -18,6 +18,8 @@ return {
       window = {
         mappings = {
           ['\\'] = 'close_window',
+          ['l'] = 'open', -- open file or expand dir
+          ['h'] = 'close_node',
         },
       },
     },
