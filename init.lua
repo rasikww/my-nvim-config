@@ -480,6 +480,36 @@ require('lazy').setup({
       -- See `:help telescope` and `:help telescope.setup()`
       local actions = require 'telescope.actions'
       local action_state = require 'telescope.actions.state'
+      local custom_enter_function = function(prompt_bufnr)
+        local entry = require('telescope.actions.state').get_selected_entry()
+        require('telescope.actions').close(prompt_bufnr)
+
+        if not entry or not (entry.path or entry.filename) then
+          print 'Invalid file entry'
+          return
+        end
+
+        local raw_path = entry.path or entry.filename
+        local fixed_path = raw_path:gsub('\\', '/')
+        local escaped_path = vim.fn.fnameescape(fixed_path)
+
+        -- Get line and column if available (for live_grep / grep_string)
+        local lnum = entry.lnum or entry.line
+        local col = entry.col
+
+        if lnum then
+          -- jump to specific line (and column if available)
+          vim.cmd(string.format('edit +%d %s', lnum, escaped_path))
+          if col then
+            vim.schedule(function()
+              vim.fn.cursor(lnum, col)
+            end)
+          end
+        else
+          -- regular open
+          vim.cmd('edit ' .. escaped_path)
+        end
+      end
 
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
@@ -504,37 +534,7 @@ require('lazy').setup({
             }, -- n
             i = {
               ['<c-d>'] = require('telescope.actions').delete_buffer,
-              --this fixes nextjs (home, etc) directory not opening 
-              ['<CR>'] = function(prompt_bufnr)
-               local entry = require('telescope.actions.state').get_selected_entry()
-               require('telescope.actions').close(prompt_bufnr)
 
-               if not entry or not (entry.path or entry.filename) then
-                 print("Invalid file entry")
-               return
-              end
-
-             local raw_path = entry.path or entry.filename
-             local fixed_path = raw_path:gsub('\\', '/')
-             local escaped_path = vim.fn.fnameescape(fixed_path)
-
-             -- Get line and column if available (for live_grep / grep_string)
-             local lnum = entry.lnum or entry.line
-             local col = entry.col
-
-             if lnum then
-              -- jump to specific line (and column if available)
-               vim.cmd(string.format("edit +%d %s", lnum, escaped_path))
-              if col then
-                vim.schedule(function()
-                vim.fn.cursor(lnum, col)
-              end)
-             end
-            else
-            -- regular open
-              vim.cmd('edit ' .. escaped_path)
-            end
-            end,  
               ['<C-j>'] = actions.preview_scrolling_down,
               ['<C-k>'] = actions.preview_scrolling_up,
               ['<C-h>'] = actions.preview_scrolling_left,
@@ -545,14 +545,26 @@ require('lazy').setup({
         -- pickers = {}
         pickers = {
           find_files = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+              },
+            },
             find_command = {
               'rg',
               '--files',
               '--hidden',
               '--glob',
               '!.git/',
-	      '--path-separator',
+              '--path-separator',
               '/',
+            },
+          },
+          live_grep = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+              },
             },
           },
         },
