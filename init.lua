@@ -504,23 +504,37 @@ require('lazy').setup({
             }, -- n
             i = {
               ['<c-d>'] = require('telescope.actions').delete_buffer,
-              --this fixes nextjs "src/app/(home)/layout.tsx"
-              --originaly it will take it as "src/app(home)/layout.tsx"
+              --this fixes nextjs (home, etc) directory not opening 
               ['<CR>'] = function(prompt_bufnr)
-                local entry = action_state.get_selected_entry()
-                actions.close(prompt_bufnr)
+               local entry = require('telescope.actions.state').get_selected_entry()
+               require('telescope.actions').close(prompt_bufnr)
 
-                if not entry or not (entry.path or entry.filename) then
-                  print 'Invalid file entry'
-                  return
-                end
+               if not entry or not (entry.path or entry.filename) then
+                 print("Invalid file entry")
+               return
+              end
 
-                local raw_path = entry.path or entry.filename
-                local fixed_path = raw_path:gsub('\\', '/')
-                local escaped_path = vim.fn.fnameescape(fixed_path)
+             local raw_path = entry.path or entry.filename
+             local fixed_path = raw_path:gsub('\\', '/')
+             local escaped_path = vim.fn.fnameescape(fixed_path)
 
-                vim.cmd('edit ' .. escaped_path)
-              end,
+             -- Get line and column if available (for live_grep / grep_string)
+             local lnum = entry.lnum or entry.line
+             local col = entry.col
+
+             if lnum then
+              -- jump to specific line (and column if available)
+               vim.cmd(string.format("edit +%d %s", lnum, escaped_path))
+              if col then
+                vim.schedule(function()
+                vim.fn.cursor(lnum, col)
+              end)
+             end
+            else
+            -- regular open
+              vim.cmd('edit ' .. escaped_path)
+            end
+            end,  
               ['<C-j>'] = actions.preview_scrolling_down,
               ['<C-k>'] = actions.preview_scrolling_up,
               ['<C-h>'] = actions.preview_scrolling_left,
@@ -537,6 +551,8 @@ require('lazy').setup({
               '--hidden',
               '--glob',
               '!.git/',
+	      '--path-separator',
+              '/',
             },
           },
         },
