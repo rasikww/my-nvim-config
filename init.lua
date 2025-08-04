@@ -567,6 +567,27 @@ require('lazy').setup({
               },
             },
           },
+          lsp_references = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+              },
+            },
+          },
+          lsp_definitions = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+              },
+            },
+          },
+          lsp_implementations = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+              },
+            },
+          },
         },
         extensions = {
           ['ui-select'] = {
