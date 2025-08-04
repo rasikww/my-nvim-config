@@ -231,14 +231,13 @@ vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
--- conform format
+-- tailwindclass sort on save
 vim.api.nvim_create_autocmd('BufWritePre', {
-  pattern = '*',
-  callback = function(args)
-    require('conform').format { bufnr = args.buf }
+  pattern = { '*.tsx', '*.jsx', '*.ts', '*.js' },
+  callback = function()
+    vim.cmd 'TailwindSort'
   end,
 })
-
 -- null-ls/ none-ls format
 -- vim.api.nvim_create_autocmd('BufWritePre', {
 --   callback = function()
