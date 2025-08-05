@@ -961,7 +961,9 @@ require('lazy').setup({
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
+        javascriptreact = { 'prettierd', 'prettier', stop_after_first = true },
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
         typescript = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
@@ -989,12 +991,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-             {
-               'rafamadriz/friendly-snippets',
-               config = function()
-                 require('luasnip.loaders.from_vscode').lazy_load()
-               end,
-             },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
         opts = {},
       },
@@ -1061,11 +1063,11 @@ require('lazy').setup({
       -- See :h blink-cmp-config-fuzzy for more information
       fuzzy = { implementation = 'lua' },
       menu = {
-         auto_show = true,
-         draw = {
-           treesitter = { "lsp" },
-           columns = { { "kinf_icon", "label", label_description, gap = 1 }, { "kind" } },
-         },
+        auto_show = true,
+        draw = {
+          treesitter = { 'lsp' },
+          columns = { { 'kinf_icon', 'label', label_description, gap = 1 }, { 'kind' } },
+        },
       },
 
       -- Shows a signature help window while you type arguments for a function
