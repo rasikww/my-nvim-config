@@ -232,12 +232,13 @@ vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
 -- tailwindclass sort on save
-vim.api.nvim_create_autocmd('BufWritePre', {
-  pattern = { '*.tsx', '*.jsx', '*.ts', '*.js' },
-  callback = function()
-    vim.cmd 'TailwindSort'
-  end,
-})
+-- no need to run this prettier sorts it better
+-- vim.api.nvim_create_autocmd('BufWritePre', {
+--   pattern = { '*.tsx', '*.jsx', '*.ts', '*.js' },
+--   callback = function()
+--     vim.cmd 'TailwindSort'
+--   end,
+-- })
 -- null-ls/ none-ls format
 -- vim.api.nvim_create_autocmd('BufWritePre', {
 --   callback = function()
