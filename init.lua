@@ -966,6 +966,43 @@ require('lazy').setup({
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
         typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
         typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        vue = { 'prettierd', 'prettier', stop_after_first = true },
+        svelte = { 'prettierd', 'prettier', stop_after_first = true },
+        astro = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Markup
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        xml = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Styles
+        css = { 'prettierd', 'prettier', stop_after_first = true },
+        scss = { 'prettierd', 'prettier', stop_after_first = true },
+        less = { 'prettierd', 'prettier', stop_after_first = true },
+        stylus = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Data / Config
+        json = { 'prettierd', 'prettier', stop_after_first = true },
+        jsonc = { 'prettierd', 'prettier', stop_after_first = true },
+        yaml = { 'prettierd', 'prettier', stop_after_first = true },
+        toml = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Database
+        sql = { 'prettierd', 'prettier', stop_after_first = true },
+        prisma = { 'prettierd', 'prettier', stop_after_first = true },
+        dbml = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Markdown
+        markdown = { 'prettierd', 'prettier', stop_after_first = true },
+        mdx = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Misc Config
+        conf = { 'prettierd', 'prettier', stop_after_first = true },
+        ini = { 'prettierd', 'prettier', stop_after_first = true },
+        dotenv = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Shell
+        sh = { 'prettierd', 'prettier', stop_after_first = true },
+        bash = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
