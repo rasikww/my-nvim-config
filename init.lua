@@ -221,6 +221,9 @@ vim.keymap.set('v', 'K', ":move '<-2<CR>gv=gv") -- Move selected line(s) up
 vim.keymap.set('n', 'x', '"_x') -- Don't copy when deleting a character
 vim.keymap.set('n', 'd', '"_d') -- Don't copy when deleting
 vim.keymap.set('v', 'd', '"_d') -- Don't copy when deleting
+vim.keymap.set('n', 'D', '"_D') -- Don't copy when deleting
+vim.keymap.set('v', 'D', '"_D') -- Don't copy when deleting
+
 
 vim.o.undofile = true
 vim.o.undodir = vim.fn.stdpath 'state' .. '/undodir'
@@ -548,6 +551,7 @@ require('lazy').setup({
             mappings = {
               i = {
                 ['<CR>'] = custom_enter_function,
+		['<C-y>'] = custom_enter_function,
               },
             },
             find_command = {
@@ -564,6 +568,7 @@ require('lazy').setup({
             mappings = {
               i = {
                 ['<CR>'] = custom_enter_function,
+		['<C-y>'] = custom_enter_function,
               },
             },
           },
@@ -951,7 +956,7 @@ require('lazy').setup({
           return nil
         else
           return {
-            timeout_ms = 500,
+            timeout_ms = 2000,
             lsp_format = 'fallback',
           }
         end
@@ -1262,3 +1267,10 @@ vim.keymap.set('v', '<leader>l', ':<C-u>InsertConsoleLogVisual<CR>', { desc = 'L
 --keymap to save in edit mode
 vim.keymap.set('i', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
 vim.keymap.set('n', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
+vim.keymap.set('v', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
+
+-- Move in insert mode with Alt + hjkl
+vim.keymap.set("i", "<A-h>", "<Left>", { noremap = true, silent = true })
+vim.keymap.set("i", "<A-j>", "<Down>", { noremap = true, silent = true })
+vim.keymap.set("i", "<A-k>", "<Up>",   { noremap = true, silent = true })
+vim.keymap.set("i", "<A-l>", "<Right>", { noremap = true, silent = true })
