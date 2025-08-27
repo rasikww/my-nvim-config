@@ -224,7 +224,6 @@ vim.keymap.set('v', 'd', '"_d') -- Don't copy when deleting
 vim.keymap.set('n', 'D', '"_D') -- Don't copy when deleting
 vim.keymap.set('v', 'D', '"_D') -- Don't copy when deleting
 
-
 vim.o.undofile = true
 vim.o.undodir = vim.fn.stdpath 'state' .. '/undodir'
 vim.fn.mkdir(vim.o.undodir, 'p') -- create dir if it doesn't exist
@@ -551,7 +550,7 @@ require('lazy').setup({
             mappings = {
               i = {
                 ['<CR>'] = custom_enter_function,
-		['<C-y>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
               },
             },
             find_command = {
@@ -568,7 +567,7 @@ require('lazy').setup({
             mappings = {
               i = {
                 ['<CR>'] = custom_enter_function,
-		['<C-y>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
               },
             },
           },
@@ -1270,7 +1269,11 @@ vim.keymap.set('n', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true 
 vim.keymap.set('v', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
 
 -- Move in insert mode with Alt + hjkl
-vim.keymap.set("i", "<A-h>", "<Left>", { noremap = true, silent = true })
-vim.keymap.set("i", "<A-j>", "<Down>", { noremap = true, silent = true })
-vim.keymap.set("i", "<A-k>", "<Up>",   { noremap = true, silent = true })
-vim.keymap.set("i", "<A-l>", "<Right>", { noremap = true, silent = true })
+vim.keymap.set('i', '<A-h>', '<Left>', { noremap = true, silent = true })
+vim.keymap.set('i', '<A-j>', '<Down>', { noremap = true, silent = true })
+vim.keymap.set('i', '<A-k>', '<Up>', { noremap = true, silent = true })
+vim.keymap.set('i', '<A-l>', '<Right>', { noremap = true, silent = true })
+
+-- File format save as LF
+vim.opt.fileformats = { 'unix' }
+vim.opt.fileformat = 'unix'
