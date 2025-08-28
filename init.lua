@@ -1070,6 +1070,8 @@ require('lazy').setup({
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
         preset = 'default',
+        ['<C-d>'] = { 'scroll_documentation_down', 'fallback' },
+        ['<C-u>'] = { 'scroll_documentation_up', 'fallback' },
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -1085,6 +1087,13 @@ require('lazy').setup({
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
         documentation = { auto_show = true, auto_show_delay_ms = 500 },
+        menu = {
+          auto_show = true,
+          draw = {
+            treesitter = { 'lsp' },
+            columns = { { 'kind_icon', 'label', label_description, gap = 1 }, { 'kind' } },
+          },
+        },
       },
 
       sources = {
@@ -1103,14 +1112,7 @@ require('lazy').setup({
       -- the rust implementation via `'prefer_rust_with_warning'`
       --
       -- See :h blink-cmp-config-fuzzy for more information
-      fuzzy = { implementation = 'lua' },
-      menu = {
-        auto_show = true,
-        draw = {
-          treesitter = { 'lsp' },
-          columns = { { 'kinf_icon', 'label', label_description, gap = 1 }, { 'kind' } },
-        },
-      },
+      fuzzy = { implementation = 'prefer_rust_with_warning' },
 
       -- Shows a signature help window while you type arguments for a function
       signature = { enabled = true },
