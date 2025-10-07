@@ -1277,5 +1277,5 @@ vim.keymap.set('i', '<A-k>', '<Up>', { noremap = true, silent = true })
 vim.keymap.set('i', '<A-l>', '<Right>', { noremap = true, silent = true })
 
 -- File format save as LF
-vim.opt.fileformats = { 'unix' }
+vim.opt.fileformats = { 'unix', 'dos' }
 vim.opt.fileformat = 'unix'

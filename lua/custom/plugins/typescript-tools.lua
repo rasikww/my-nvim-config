@@ -7,7 +7,7 @@ return {
       -- tsserver_path = 'C:/Users/willo/AppData/Roaming/npm/node_modules/typescript-language-server',
       settings = {
         tsserver_plugins = {},
-        separate_diagnostic_server = true,
+        separate_diagnostic_server = false,
         expose_as_code_action = 'all',
       },
     }
