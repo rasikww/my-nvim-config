@@ -8,6 +8,11 @@ return {
     'nvim-lua/plenary.nvim',
     'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
     'MunifTanjim/nui.nvim',
+    {
+      'antosha417/nvim-lsp-file-operations',
+      dependencies = { 'nvim-lua/plenary.nvim' },
+      config = true,
+    },
   },
   lazy = false,
   keys = {
