@@ -1276,6 +1276,12 @@ vim.keymap.set('i', '<A-j>', '<Down>', { noremap = true, silent = true })
 vim.keymap.set('i', '<A-k>', '<Up>', { noremap = true, silent = true })
 vim.keymap.set('i', '<A-l>', '<Right>', { noremap = true, silent = true })
 
+--keymap to quickly navigate to front and back
+vim.keymap.set('n', 'H', '^', { noremap = true, silent = true })
+vim.keymap.set('n', 'L', '$', { noremap = true, silent = true })
+vim.keymap.set('v', 'H', '^', { noremap = true, silent = true })
+vim.keymap.set('v', 'L', '$', { noremap = true, silent = true })
+
 -- File format save as LF
 vim.opt.fileformats = { 'unix', 'dos' }
 vim.opt.fileformat = 'unix'
