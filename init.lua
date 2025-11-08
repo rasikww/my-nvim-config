@@ -1270,11 +1270,11 @@ vim.keymap.set('i', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true 
 vim.keymap.set('n', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
 vim.keymap.set('v', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
 
--- Move in insert mode with Alt + hjkl
-vim.keymap.set('i', '<A-h>', '<Left>', { noremap = true, silent = true })
-vim.keymap.set('i', '<A-j>', '<Down>', { noremap = true, silent = true })
-vim.keymap.set('i', '<A-k>', '<Up>', { noremap = true, silent = true })
-vim.keymap.set('i', '<A-l>', '<Right>', { noremap = true, silent = true })
+-- Move in insert mode with Ctrl + hjkl
+vim.keymap.set('i', '<C-h>', '<Left>', { noremap = true, silent = true })
+vim.keymap.set('i', '<C-j>', '<Down>', { noremap = true, silent = true })
+vim.keymap.set('i', '<C-k>', '<Up>', { noremap = true, silent = true })
+vim.keymap.set('i', '<C-l>', '<Right>', { noremap = true, silent = true })
 
 --keymap to quickly navigate to front and back
 vim.keymap.set('n', 'H', '^', { noremap = true, silent = true })
@@ -1285,3 +1285,6 @@ vim.keymap.set('v', 'L', '$', { noremap = true, silent = true })
 -- File format save as LF
 vim.opt.fileformats = { 'unix', 'dos' }
 vim.opt.fileformat = 'unix'
+
+-- borders
+vim.o.winborder = 'rounded'
