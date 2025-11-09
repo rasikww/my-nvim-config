@@ -5,22 +5,9 @@ return {
     dependencies = { 'davidmh/cspell.nvim' },
     opts = function(_, opts)
       local cspell = require 'cspell'
-      local null_ls = require 'null-ls'
 
-      -- -- Helper: check if any of these config files exist in root
-      -- local function has_root_file(files)
-      --   local cwd = vim.fn.getcwd()
-      --   for _, file in ipairs(files) do
-      --     if vim.fn.filereadable(cwd .. '/' .. file) == 1 then
-      --       return true
-      --     end
-      --   end
-      --   return false
-      -- end
-      --
       opts.sources = opts.sources or {}
 
-      -- CSpell diagnostics and code actions
       table.insert(
         opts.sources,
         cspell.diagnostics.with {
@@ -29,28 +16,23 @@ return {
           end,
         }
       )
-      table.insert(opts.sources, cspell.code_actions)
 
-      -- Conditionally add eslint_d diagnostics & code actions
-      -- if has_root_file { '.eslintrc.js', '.eslintrc.json', 'eslint.config.js', 'eslint.config.cjs', 'eslint.config.mjs' } then
-      --   table.insert(opts.sources, null_ls.builtins.diagnostics.eslint_d)
-      --   table.insert(opts.sources, null_ls.builtins.code_actions.eslint_d)
-      -- end
-      --
-      -- -- Conditionally add prettierd formatter
-      -- if
-      --   has_root_file {
-      --     '.prettierrc',
-      --     '.prettierrc.js',
-      --     '.prettierrc.json',
-      --     'prettier.config.js',
-      --     'prettier.config.cjs',
-      --   }
-      -- then
-      --   table.insert(opts.sources, null_ls.builtins.formatting.prettierd)
-      -- end
-      -- Add this to your config
-      -- Add this to your config
+      table.insert(
+        opts.sources,
+        cspell.code_actions.with {
+          config = {
+            -- Use the same config file path
+            config_file_preferred_name = 'cspell.json',
+            -- Preserve formatting
+            on_add_to_json = function(payload)
+              -- This hook is called after adding to json
+              vim.defer_fn(function()
+                vim.cmd 'checktime'
+              end, 100)
+            end,
+          },
+        }
+      )
       -- Add this to your config
       vim.api.nvim_create_user_command('CSpellAddAll', function()
         local words = {}
@@ -66,7 +48,6 @@ return {
           end
         end
 
-        local count = 0
         local cspell_path = vim.fn.getcwd() .. '/cspell.json'
 
         -- Check if cspell.json exists
@@ -83,9 +64,16 @@ return {
         local config = vim.fn.json_decode(content)
         config.words = config.words or {}
 
+        -- Create a set of existing words for faster lookup
+        local existing_words = {}
+        for _, word in ipairs(config.words) do
+          existing_words[word] = true
+        end
+
         -- Add new words
+        local count = 0
         for word, _ in pairs(words) do
-          if not vim.tbl_contains(config.words, word) then
+          if not existing_words[word] then
             table.insert(config.words, word)
             count = count + 1
           end
@@ -94,15 +82,27 @@ return {
         -- Sort words alphabetically
         table.sort(config.words)
 
-        -- Write back to file
-        local encoded = vim.fn.json_encode(config)
+        -- Write back with consistent formatting (matches cspell CLI format)
+        local json_content = string.format(
+          '{"version":"%s","language":"%s","words":%s,"flagWords":%s}',
+          config.version or '0.2',
+          config.language or 'en',
+          vim.fn.json_encode(config.words),
+          vim.fn.json_encode(config.flagWords or {})
+        )
+
         file = io.open(cspell_path, 'w')
-        file:write(encoded)
+        file:write(json_content .. '\n')
         file:close()
 
         if count > 0 then
           print('Added ' .. count .. ' words to cspell.json')
-          vim.cmd 'edit' -- Reload buffer to refresh diagnostics
+          -- Wait a bit before reloading to let file system catch up
+          vim.defer_fn(function()
+            vim.cmd 'checktime' -- Reload file if changed on disk
+            vim.diagnostic.reset() -- Clear diagnostics
+            vim.cmd 'edit' -- Reload buffer
+          end, 100)
         else
           print 'No new words to add'
         end
