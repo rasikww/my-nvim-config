@@ -5,8 +5,17 @@ return {
     dependencies = { 'davidmh/cspell.nvim' },
     opts = function(_, opts)
       local cspell = require 'cspell'
-
       opts.sources = opts.sources or {}
+
+      -- Shared config for both sources
+      local cspell_config = {
+        config_file_preferred_name = 'cspell.json',
+        on_add_to_json = function(payload)
+          vim.defer_fn(function()
+            vim.cmd 'checktime'
+          end, 100)
+        end,
+      }
 
       table.insert(
         opts.sources,
@@ -14,29 +23,20 @@ return {
           diagnostics_postprocess = function(diagnostic)
             diagnostic.severity = vim.diagnostic.severity.HINT
           end,
+          config = cspell_config,
         }
       )
 
       table.insert(
         opts.sources,
         cspell.code_actions.with {
-          config = {
-            -- Use the same config file path
-            config_file_preferred_name = 'cspell.json',
-            -- Preserve formatting
-            on_add_to_json = function(payload)
-              -- This hook is called after adding to json
-              vim.defer_fn(function()
-                vim.cmd 'checktime'
-              end, 100)
-            end,
-          },
+          config = cspell_config,
         }
       )
-      -- Add this to your config
+
+      -- CSpellAddAll command
       vim.api.nvim_create_user_command('CSpellAddAll', function()
         local words = {}
-        -- Get all diagnostics for the current buffer
         local diagnostics = vim.diagnostic.get(0)
 
         for _, diagnostic in ipairs(diagnostics) do
@@ -50,13 +50,11 @@ return {
 
         local cspell_path = vim.fn.getcwd() .. '/cspell.json'
 
-        -- Check if cspell.json exists
         if vim.fn.filereadable(cspell_path) == 0 then
           print('cspell.json not found at: ' .. cspell_path)
           return
         end
 
-        -- Read and parse cspell.json
         local file = io.open(cspell_path, 'r')
         local content = file:read '*all'
         file:close()
@@ -64,13 +62,11 @@ return {
         local config = vim.fn.json_decode(content)
         config.words = config.words or {}
 
-        -- Create a set of existing words for faster lookup
         local existing_words = {}
         for _, word in ipairs(config.words) do
           existing_words[word] = true
         end
 
-        -- Add new words
         local count = 0
         for word, _ in pairs(words) do
           if not existing_words[word] then
@@ -79,10 +75,13 @@ return {
           end
         end
 
-        -- Sort words alphabetically
+        if count == 0 then
+          print 'No new words to add'
+          return
+        end
+
         table.sort(config.words)
 
-        -- Write back with consistent formatting (matches cspell CLI format)
         local json_content = string.format(
           '{"version":"%s","language":"%s","words":%s,"flagWords":%s}',
           config.version or '0.2',
@@ -95,17 +94,13 @@ return {
         file:write(json_content .. '\n')
         file:close()
 
-        if count > 0 then
-          print('Added ' .. count .. ' words to cspell.json')
-          -- Wait a bit before reloading to let file system catch up
-          vim.defer_fn(function()
-            vim.cmd 'checktime' -- Reload file if changed on disk
-            vim.diagnostic.reset() -- Clear diagnostics
-            vim.cmd 'edit' -- Reload buffer
-          end, 100)
-        else
-          print 'No new words to add'
-        end
+        print('Added ' .. count .. ' words to cspell.json')
+
+        vim.defer_fn(function()
+          vim.cmd 'checktime'
+          vim.diagnostic.reset()
+          vim.cmd 'edit'
+        end, 100)
       end, {})
     end,
   },
