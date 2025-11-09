@@ -1002,7 +1002,11 @@ require('lazy').setup({
           auto_show = true,
           draw = {
             treesitter = { 'lsp' },
-            columns = { { 'kind_icon', 'label', label_description, gap = 1 }, { 'kind' } },
+            columns = {
+              { 'kind_icon' },
+              { 'label', 'label_description', gap = 1 },
+              { 'kind' },
+            },
           },
         },
       },

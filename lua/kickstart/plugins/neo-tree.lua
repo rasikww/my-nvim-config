@@ -29,4 +29,16 @@ return {
       },
     },
   },
+  config = function(_, opts)
+    require('neo-tree').setup(opts)
+
+    vim.api.nvim_create_autocmd('BufDelete', {
+      desc = 'Close NeoTree before deleting a buffer',
+      callback = function(args)
+        if vim.bo[args.buf].filetype ~= 'neo-tree' then
+          vim.cmd 'Neotree close'
+        end
+      end,
+    })
+  end,
 }
