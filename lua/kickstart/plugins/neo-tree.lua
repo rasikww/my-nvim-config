@@ -16,11 +16,17 @@ return {
   },
   lazy = false,
   keys = {
-    { '\\', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
+    { '\\', ':Neotree toggle<CR>', desc = 'NeoTree toggle', silent = true },
   },
   opts = {
     filesystem = {
       window = {
+        position = 'float',
+        float = {
+          width = '80%', -- Example: 80% of screen width
+          height = '80%', -- Example: 80% of screen height
+          position = '50%', -- Example: Center the float
+        },
         mappings = {
           ['\\'] = 'close_window',
           ['l'] = 'open', -- open file or expand dir
@@ -29,16 +35,16 @@ return {
       },
     },
   },
-  config = function(_, opts)
-    require('neo-tree').setup(opts)
-
-    vim.api.nvim_create_autocmd('BufDelete', {
-      desc = 'Close NeoTree before deleting a buffer',
-      callback = function(args)
-        if vim.bo[args.buf].filetype ~= 'neo-tree' then
-          vim.cmd 'Neotree close'
-        end
-      end,
-    })
-  end,
+  -- config = function(_, opts)
+  --   require('neo-tree').setup(opts)
+  --
+  --   vim.api.nvim_create_autocmd('BufDelete', {
+  --     desc = 'Close NeoTree before deleting a buffer',
+  --     callback = function(args)
+  --       if vim.bo[args.buf].filetype ~= 'neo-tree' then
+  --         vim.cmd 'Neotree close'
+  --       end
+  --     end,
+  --   })
+  -- end,
 }

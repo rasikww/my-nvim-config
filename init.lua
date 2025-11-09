@@ -1203,3 +1203,5 @@ vim.opt.fileformat = 'unix'
 
 -- borders
 vim.o.winborder = 'rounded'
+
+vim.diagnostic.config { underline = true }
