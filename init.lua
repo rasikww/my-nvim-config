@@ -516,7 +516,7 @@ require('lazy').setup({
               ctxlen = vim.o.scrolloff,
             },
             entry_format = 'state #$ID, $STAT, $TIME',
-            time_format = '',
+            time_format = '%Y-%m-%d %H:%M:%S',
             saved_only = false, -- telescope-undo.nvim config, see below
           },
         },
