@@ -474,6 +474,14 @@ require('lazy').setup({
               '/',
             },
           },
+          recent_files = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+            },
+          },
           live_grep = {
             mappings = {
               i = {
