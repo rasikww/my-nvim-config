@@ -803,6 +803,12 @@ require('lazy').setup({
           -- capabilities = {},
           settings = {
             Lua = {
+              runtime = {
+                version = 'luaJIT',
+              },
+              workspace = { checkThirdParty = false },
+              diagnostics = { globals = { 'vim' } },
+              hint = { enable = true },
               completion = {
                 callSnippet = 'Replace',
               },
