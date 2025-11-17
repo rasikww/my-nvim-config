@@ -1219,25 +1219,3 @@ vim.opt.fileformat = 'unix'
 vim.o.winborder = 'rounded'
 
 vim.diagnostic.config { underline = true }
-
--- Save folds only for normal file buffers when leaving a buffer
-vim.api.nvim_create_autocmd({ 'BufLeave', 'VimLeave' }, {
-  callback = function(event)
-    local buf = event.buf
-    if vim.bo[buf].buftype == '' and vim.api.nvim_buf_get_name(buf) ~= '' then
-      pcall(vim.cmd, 'mkview')
-    end
-  end,
-})
-
--- Restore folds when re-entering buffer
-vim.api.nvim_create_autocmd('BufWinEnter', {
-  callback = function(event)
-    local buf = event.buf
-    if vim.bo[buf].buftype == '' and vim.api.nvim_buf_get_name(buf) ~= '' then
-      vim.defer_fn(function()
-        pcall(vim.cmd, 'silent! loadview')
-      end, 100)
-    end
-  end,
-})
