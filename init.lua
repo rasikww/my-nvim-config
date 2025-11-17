@@ -360,7 +360,7 @@ require('lazy').setup({
         -- `cond` is a condition used to determine whether this plugin should be
         -- installed and loaded.
         cond = function()
-          return vim.fn.executable 'make' == 1
+          return vim.fn.executable 'make' == 0 --1 if want to add fzf
         end,
       },
       { 'nvim-telescope/telescope-ui-select.nvim' },
