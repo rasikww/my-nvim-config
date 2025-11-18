@@ -474,7 +474,7 @@ require('lazy').setup({
               '/',
             },
           },
-          recent_files = {
+          old_files = {
             mappings = {
               i = {
                 ['<CR>'] = custom_enter_function,
