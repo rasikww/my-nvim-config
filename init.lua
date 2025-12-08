@@ -1,3 +1,5 @@
+-- track time
+vim.g.nvim_start_time = vim.loop.hrtime()
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -1220,3 +1222,20 @@ vim.opt.fileformat = 'unix'
 vim.o.winborder = 'rounded'
 
 vim.diagnostic.config { underline = true }
+
+-- always place at the last line(startup time tracker)
+vim.api.nvim_create_autocmd('UIEnter', {
+  callback = function()
+    vim.schedule(function()
+      local total_ms = math.floor((vim.loop.hrtime() - vim.g.nvim_start_time) / 1e6)
+      local lazy_stats = require('lazy').stats()
+      local plugin_ms = math.floor(lazy_stats.startuptime)
+      -- vim.notify('✨ Neovim started in ' .. total_ms .. ' ms\n' .. '📦 Plugins loaded in ' .. plugin_ms .. ' ms', vim.log.levels.INFO)
+      vim.api.nvim_echo({
+        { '✨ Neovim started in ' .. total_ms .. ' ms  ', 'Normal' },
+        { '📦 Plugins loaded in ' .. plugin_ms .. ' ms', 'Comment' },
+      }, true, {})
+      vim.cmd 'redraw'
+    end)
+  end,
+})
