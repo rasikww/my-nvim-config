@@ -32,7 +32,15 @@ vim.o.showmode = false
 -- vim.schedule(function()
 --   vim.o.clipboard = 'unnamedplus'
 -- end)
-vim.opt.clipboard = 'unnamedplus'
+-- vim.opt.clipboard = 'unnamedplus'
+vim.api.nvim_create_autocmd('UIEnter', {
+  once = true,
+  callback = function()
+    vim.defer_fn(function()
+      vim.o.clipboard = 'unnamedplus'
+    end, 100)
+  end,
+})
 
 -- Enable break indent
 vim.o.breakindent = true
