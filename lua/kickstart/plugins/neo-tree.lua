@@ -14,7 +14,7 @@ return {
       config = true,
     },
   },
-  lazy = false,
+  lazy = true,
   keys = {
     { '\\', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
   },

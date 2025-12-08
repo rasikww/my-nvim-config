@@ -2,6 +2,7 @@ return {
   'catgoose/nvim-colorizer.lua',
   config = function()
     require('colorizer').setup {
+      event = 'BufReadPre',
       user_default_options = {
         oklch_fn = true,
         RGB = true,

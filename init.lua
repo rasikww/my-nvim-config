@@ -594,7 +594,7 @@ require('lazy').setup({
       -- Automatically install LSPs and related tools to stdpath for Neovim
       -- Mason must be loaded before its dependents so we need to set it up here.
       -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
-      { 'mason-org/mason.nvim', opts = {} },
+      { 'mason-org/mason.nvim', opts = { event = 'VeryLazy' } },
       'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
@@ -945,6 +945,7 @@ require('lazy').setup({
       {
         'L3MON4D3/LuaSnip',
         version = '2.*',
+        lazy = true,
         build = (function()
           -- Build Step is needed for regex support in snippets.
           -- This step is not supported in many windows environments.
