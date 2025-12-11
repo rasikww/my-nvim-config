@@ -31,6 +31,10 @@ return {
           ['\\'] = 'close_window',
           ['l'] = 'open', -- open file or expand dir
           ['h'] = 'close_node',
+          ['<C-f>'] = 'none',
+          ['<C-b>'] = 'none',
+          ['<C-u>'] = { 'scroll_preview', config = { direction = 10 } },
+          ['<C-d>'] = { 'scroll_preview', config = { direction = -10 } },
         },
       },
     },
