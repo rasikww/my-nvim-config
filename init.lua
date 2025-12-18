@@ -492,6 +492,14 @@ require('lazy').setup({
               },
             },
           },
+          search_history = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+            },
+          },
           live_grep = {
             mappings = {
               i = {
