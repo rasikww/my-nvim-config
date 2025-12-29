@@ -473,6 +473,10 @@ require('lazy').setup({
                 ['<CR>'] = custom_enter_function,
                 ['<C-y>'] = custom_enter_function,
               },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
             },
             find_command = {
               'rg',
@@ -490,11 +494,19 @@ require('lazy').setup({
                 ['<CR>'] = custom_enter_function,
                 ['<C-y>'] = custom_enter_function,
               },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
             },
           },
           search_history = {
             mappings = {
               i = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+              n = {
                 ['<CR>'] = custom_enter_function,
                 ['<C-y>'] = custom_enter_function,
               },
@@ -506,12 +518,20 @@ require('lazy').setup({
                 ['<CR>'] = custom_enter_function,
                 ['<C-y>'] = custom_enter_function,
               },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
             },
           },
           lsp_references = {
             mappings = {
               i = {
                 ['<CR>'] = custom_enter_function,
+              },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
               },
             },
           },
@@ -520,12 +540,20 @@ require('lazy').setup({
               i = {
                 ['<CR>'] = custom_enter_function,
               },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
             },
           },
           lsp_implementations = {
             mappings = {
               i = {
                 ['<CR>'] = custom_enter_function,
+              },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
               },
             },
           },
