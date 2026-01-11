@@ -1128,6 +1128,7 @@ require('lazy').setup({
     'nvim-mini/mini.nvim',
     config = function()
       require('mini.move').setup()
+      require('mini.cursorword').setup()
       -- Better Around/Inside textobjects
       --
       -- Examples:
@@ -1293,6 +1294,29 @@ vim.opt.fileformat = 'unix'
 vim.o.winborder = 'rounded'
 
 vim.diagnostic.config { underline = true }
+
+-- Quickfix and Location list mappings
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'qf',
+  callback = function()
+    local opts = { buffer = true, silent = true }
+
+    -- Check if it's a location list or quickfix list
+    local is_loclist = vim.fn.getloclist(0, { filewinid = 1 }).filewinid ~= 0
+
+    -- Enter: go to location and close list
+    vim.keymap.set('n', '<CR>', function()
+      local line = vim.fn.line '.'
+      if is_loclist then
+        vim.cmd(line .. 'll') -- jump to location list item
+        vim.cmd 'lclose'
+      else
+        vim.cmd(line .. 'cc') -- jump to quickfix item
+        vim.cmd 'cclose'
+      end
+    end, opts)
+  end,
+})
 
 -- always place at the last line(startup time tracker)
 vim.api.nvim_create_autocmd('UIEnter', {
