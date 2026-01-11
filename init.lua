@@ -176,27 +176,53 @@ vim.opt.expandtab = true
 
 -- wrap selection with characters
 vim.api.nvim_create_user_command('Wrap', function()
-  local chars = vim.fn.input 'Enter surrounding chars (e.g., "", [], <>): '
-  if #chars ~= 2 then
-    vim.notify('Please enter exactly 2 characters', vim.log.levels.WARN)
+  local chars = vim.fn.input 'Enter surrounding chars (e.g., "", [], {}, ({})): '
+
+  local open, close
+
+  if #chars == 2 then
+    open = chars:sub(1, 1)
+    close = chars:sub(2, 2)
+  elseif #chars == 4 then
+    open = chars:sub(1, 2)
+    close = chars:sub(3, 4)
+  else
+    vim.notify('Please enter either 2 or 4 characters (e.g., "", [], ({}))', vim.log.levels.WARN)
     return
   end
 
-  -- Get visual selection bounds
-  local start_line, start_col = unpack(vim.api.nvim_buf_get_mark(0, '<'))
-  local end_line, end_col = unpack(vim.api.nvim_buf_get_mark(0, '>'))
+  local mode = vim.fn.visualmode()
 
-  -- Adjust for end-of-line cases
-  end_col = end_col + 1
+  local start_pos = vim.api.nvim_buf_get_mark(0, '<')
+  local end_pos = vim.api.nvim_buf_get_mark(0, '>')
 
-  -- Apply the wrapping
-  vim.api.nvim_buf_set_text(0, start_line - 1, start_col, end_line - 1, end_col, {
-    chars:sub(1, 1) .. vim.api.nvim_buf_get_text(0, start_line - 1, start_col, end_line - 1, end_col, {})[1] .. chars:sub(2, 2),
-  })
+  local start_line = start_pos[1] - 1
+  local end_line = end_pos[1] - 1
+
+  local start_col, end_col
+
+  if mode == 'V' then
+    start_col = 0
+    end_col = #vim.api.nvim_buf_get_lines(0, end_line, end_line + 1, false)[1]
+  else
+    start_col = start_pos[2]
+    end_col = end_pos[2] + 1
+  end
+
+  local lines = vim.api.nvim_buf_get_text(0, start_line, start_col, end_line, end_col, {})
+
+  if #lines == 0 then
+    return
+  end
+
+  -- Wrap
+  lines[1] = open .. lines[1]
+  lines[#lines] = lines[#lines] .. close
+
+  vim.api.nvim_buf_set_text(0, start_line, start_col, end_line, end_col, lines)
 end, { range = true })
 
--- Keymap for visual mode wrapping
-vim.keymap.set('v', '<leader>w', ':Wrap<CR>', { silent = true })
+vim.keymap.set('v', '<leader>w', ':Wrap<CR>', { silent = true, desc = '[W]rap selection' })
 
 -- Visual line at 80 characters
 vim.opt.colorcolumn = '80'
