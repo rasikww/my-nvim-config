@@ -162,17 +162,6 @@ vim.opt.expandtab = true
 --     vim.cmd 'TailwindSort'
 --   end,
 -- })
--- null-ls/ none-ls format
--- vim.api.nvim_create_autocmd('BufWritePre', {
---   callback = function()
---     vim.lsp.buf.format {
---       filter = function(client)
---         return client.name == 'null-ls'
---       end,
---       timeout_ms = 2000,
---     }
---   end,
--- })
 
 -- wrap selection with characters
 vim.api.nvim_create_user_command('Wrap', function()
