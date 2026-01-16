@@ -359,6 +359,7 @@ require('lazy').setup({
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>b', group = '[B]ufferline', mode = { 'n' } },
+        { '<leader>p', group = '[P]ull Request', mode = { 'n' } },
       },
     },
   },
@@ -1306,6 +1307,39 @@ vim.api.nvim_create_autocmd('FileType', {
     end, opts)
   end,
 })
+--get list of changed files
+--needs github cli
+vim.keymap.set('n', '<leader>pf', function()
+  local notify = vim.notify
+  local loading_id = notify('Loading PR changed files…', vim.log.levels.INFO, {
+    title = 'GitHub PR',
+    timeout = false,
+  })
+
+  require('telescope.pickers')
+    .new({}, {
+      prompt_title = 'PR Changed Files',
+      finder = require('telescope.finders').new_oneshot_job({
+        'gh',
+        'pr',
+        'diff',
+        '--name-only',
+      }, {
+        on_exit = function()
+          vim.schedule(function()
+            notify('PR files loaded ✔', vim.log.levels.INFO, {
+              title = 'GitHub PR',
+              replace = loading_id,
+              timeout = 800,
+            })
+          end)
+        end,
+      }),
+      previewer = require('telescope.config').values.file_previewer {},
+      sorter = require('telescope.config').values.generic_sorter {},
+    })
+    :find()
+end, { desc = 'PR changed [F]iles' })
 
 -- always place at the last line(startup time tracker)
 vim.api.nvim_create_autocmd('UIEnter', {
