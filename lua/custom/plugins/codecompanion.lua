@@ -6,6 +6,7 @@ return {
   dependencies = {
     'nvim-lua/plenary.nvim',
     'nvim-treesitter/nvim-treesitter',
+    'lalitmee/codecompanion-spinners.nvim',
   },
   cmd = { 'CodeCompanionActions', 'CodeCompanionChat', 'CodeCompanion' },
   opts = {
@@ -110,6 +111,15 @@ return {
       },
       opts = {
         log_level = 'DEBUG',
+      },
+    },
+    extensions = {
+      spinner = {
+        -- enabled = true, -- This is the default
+        opts = {
+          -- Your spinner configuration goes here
+          style = 'fidget',
+        },
       },
     },
   },
