@@ -147,8 +147,8 @@ vim.keymap.set('n', '<leader>bp', ':BufferLinePick<CR>', { desc = 'Pick buffer' 
 vim.keymap.set('n', '<S-Tab>', '<C-^>', { desc = 'Toggle last buffer' })
 vim.keymap.set('i', 'jj', '<Esc>', { noremap = true, silent = true })
 vim.keymap.set('i', 'kk', '<Esc>', { noremap = true, silent = true })
-vim.keymap.set('v', 'J', ":move '>+1<CR>gv=gv") -- Move selected line(s) down
-vim.keymap.set('v', 'K', ":move '<-2<CR>gv=gv") -- Move selected line(s) up
+-- vim.keymap.set('v', 'J', ":move '>+1<CR>gv=gv") -- Move selected line(s) down
+-- vim.keymap.set('v', 'K', ":move '<-2<CR>gv=gv") -- Move selected line(s) up
 vim.keymap.set('n', 'x', '"_x') -- Don't copy when deleting a character
 vim.keymap.set('n', 'd', '"_d') -- Don't copy when deleting
 vim.keymap.set('v', 'd', '"_d') -- Don't copy when deleting
