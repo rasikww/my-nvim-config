@@ -1283,8 +1283,23 @@ vim.api.nvim_create_user_command('InsertConsoleLogVisual', function()
   vim.api.nvim_buf_set_lines(0, row, row, false, { log_line })
 end, {})
 
+-- Define a command to insert print() of visual selection
+vim.api.nvim_create_user_command('InsertPrintVisual', function()
+  local selected = get_visual_selection()
+  if selected == '' then
+    vim.notify('No selection detected', vim.log.levels.WARN)
+    return
+  end
+  local log_line = "print('" .. selected .. ":', " .. selected .. ');'
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  vim.api.nvim_buf_set_lines(0, row, row, false, { log_line })
+end, {})
+
 -- Keymap for visual mode to insert log
-vim.keymap.set('v', '<leader>l', ':<C-u>InsertConsoleLogVisual<CR>', { desc = 'Log selected text', silent = true })
+vim.keymap.set('v', '<leader>ll', ':<C-u>InsertConsoleLogVisual<CR>', { desc = 'Log selected text', silent = true })
+
+-- Keymap for visual mode to insert print
+vim.keymap.set('v', '<leader>lp', ':<C-u>InsertPrintVisual<CR>', { desc = 'Print selected text', silent = true })
 
 --keymap to save in edit mode
 vim.keymap.set('i', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
