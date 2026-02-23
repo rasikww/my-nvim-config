@@ -1328,7 +1328,7 @@ vim.o.winborder = 'rounded'
 vim.diagnostic.config { underline = true }
 
 -- Quickfix and Location list mappings
-vim.api.nvim_create_autocmd('FileType', {
+--[[ vim.api.nvim_create_autocmd('FileType', {
   pattern = 'qf',
   callback = function()
     local opts = { buffer = true, silent = true }
@@ -1348,7 +1348,7 @@ vim.api.nvim_create_autocmd('FileType', {
       end
     end, opts)
   end,
-})
+}) ]]
 --get list of changed files
 --needs github cli
 vim.keymap.set('n', '<leader>pf', function()
