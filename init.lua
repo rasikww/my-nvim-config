@@ -1349,28 +1349,54 @@ vim.diagnostic.config { underline = true }
     end, opts)
   end,
 }) ]]
---get list of changed files
---needs github cli
+--get list of changed files in the current branch compared to main
 vim.keymap.set('n', '<leader>pf', function()
   local notify = vim.notify
-  local loading_id = notify('Loading PR changed files…', vim.log.levels.INFO, {
-    title = 'GitHub PR',
+
+  local loading_id = notify('Loading changed files in the branch…', vim.log.levels.INFO, {
+    title = 'Git Diff',
     timeout = false,
   })
 
+  local default_branch = nil
+
+  -- Try symbolic-ref first (silence errors)
+  local ok, result = pcall(vim.fn.systemlist, 'git symbolic-ref --quiet refs/remotes/origin/HEAD')
+
+  if ok and result and result[1] and result[1] ~= '' then
+    default_branch = result[1]:gsub('refs/remotes/origin/', '')
+  end
+
+  -- Fallback: parse remote show origin
+  if not default_branch then
+    local remote_info = vim.fn.systemlist 'git remote show origin'
+    for _, line in ipairs(remote_info) do
+      local match = line:match 'HEAD branch: (.+)'
+      if match then
+        default_branch = match
+        break
+      end
+    end
+  end
+
+  -- Final fallback
+  if not default_branch or default_branch == '' then
+    default_branch = 'main'
+  end
+
   require('telescope.pickers')
     .new({}, {
-      prompt_title = 'PR Changed Files',
+      prompt_title = 'Changed Files (vs ' .. default_branch .. ')',
       finder = require('telescope.finders').new_oneshot_job({
-        'gh',
-        'pr',
+        'git',
         'diff',
         '--name-only',
+        'origin/' .. default_branch .. '...HEAD',
       }, {
         on_exit = function()
           vim.schedule(function()
-            notify('PR files loaded ✔', vim.log.levels.INFO, {
-              title = 'GitHub PR',
+            notify('Files loaded ✔', vim.log.levels.INFO, {
+              title = 'Git Diff',
               replace = loading_id,
               timeout = 800,
             })
@@ -1381,7 +1407,7 @@ vim.keymap.set('n', '<leader>pf', function()
       sorter = require('telescope.config').values.generic_sorter {},
     })
     :find()
-end, { desc = 'PR changed [F]iles' })
+end, { desc = '[P]roject [F]iles changed from default branch' })
 
 -- always place at the last line(startup time tracker)
 vim.api.nvim_create_autocmd('UIEnter', {
