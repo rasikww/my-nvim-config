@@ -1409,6 +1409,67 @@ vim.keymap.set('n', '<leader>pf', function()
     :find()
 end, { desc = '[P]roject [F]iles changed from default branch' })
 
+-- get list of changed files in the current branch compared to user selected branch
+vim.keymap.set('n', '<leader>pc', function()
+  local pickers = require 'telescope.pickers'
+  local finders = require 'telescope.finders'
+  local conf = require('telescope.config').values
+  local actions = require 'telescope.actions'
+  local action_state = require 'telescope.actions.state'
+  local notify = vim.notify
+
+  -- Step 1: Open Branch Picker
+  require('telescope.builtin').git_branches {
+    prompt_title = 'Select Branch to Diff Against',
+    attach_mappings = function(prompt_bufnr, map)
+      actions.select_default:replace(function()
+        -- Get the selected branch name
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+
+        if not selection then
+          return
+        end
+
+        -- The branch name (handles both local and remote)
+        local target_branch = selection.value
+
+        -- Step 2: Show loading notification
+        local loading_id = notify('Diffing against ' .. target_branch .. '...', vim.log.levels.INFO, {
+          title = 'Git Diff',
+          timeout = false,
+        })
+
+        -- Step 3: Launch the file picker for changed files
+        pickers
+          .new({}, {
+            prompt_title = 'Files changed vs ' .. target_branch,
+            finder = finders.new_oneshot_job({
+              'git',
+              'diff',
+              '--name-only',
+              target_branch .. '...HEAD',
+            }, {
+              on_exit = function()
+                vim.schedule(function()
+                  notify('Files loaded ✔', vim.log.levels.INFO, {
+                    title = 'Git Diff',
+                    replace = loading_id,
+                    timeout = 800,
+                  })
+                end)
+              end,
+            }),
+            previewer = conf.file_previewer {},
+            sorter = conf.generic_sorter {},
+          })
+          :find()
+      end)
+      return true
+    end,
+  }
+end, { desc = '[P]roject [C]hoose branch to diff' })
+
 -- always place at the last line(startup time tracker)
 vim.api.nvim_create_autocmd('UIEnter', {
   callback = function()
