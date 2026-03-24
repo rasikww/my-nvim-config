@@ -1349,6 +1349,37 @@ vim.diagnostic.config { underline = true }
     end, opts)
   end,
 }) ]]
+
+--get default branch
+local function get_default_branch()
+  local default_branch = nil
+  -- Try symbolic-ref first (silence errors)
+  local ok, result = pcall(vim.fn.systemlist, 'git symbolic-ref --quiet refs/remotes/origin/HEAD')
+
+  if ok and result and result[1] and result[1] ~= '' then
+    default_branch = result[1]:gsub('refs/remotes/origin/', '')
+  end
+
+  -- Fallback: parse remote show origin
+  if not default_branch then
+    local remote_info = vim.fn.systemlist 'git remote show origin'
+    for _, line in ipairs(remote_info) do
+      local match = line:match 'HEAD branch: (.+)'
+      if match then
+        default_branch = match
+        break
+      end
+    end
+  end
+
+  -- Final fallback
+  if not default_branch or default_branch == '' then
+    default_branch = 'main'
+  end
+
+  return default_branch
+end
+
 --get list of changed files in the current branch compared to main
 vim.keymap.set('n', '<leader>pf', function()
   local notify = vim.notify
@@ -1469,6 +1500,149 @@ vim.keymap.set('n', '<leader>pc', function()
     end,
   }
 end, { desc = '[P]roject [C]hoose branch to diff' })
+
+vim.keymap.set('n', '<leader>pa', function()
+  local pickers = require 'telescope.pickers'
+  local finders = require 'telescope.finders'
+  local conf = require('telescope.config').values
+  local actions = require 'telescope.actions'
+  local action_state = require 'telescope.actions.state'
+  local notify = vim.notify
+
+  -- Helper: get commit hashes for a branch (no merges)
+  local function get_commits(branch)
+    local result = vim.fn.systemlist('git log --no-merges --format="%H" ' .. branch)
+    local set = {}
+    for _, hash in ipairs(result) do
+      hash = hash:gsub('"', '')
+      if hash ~= '' then
+        set[hash] = true
+      end
+    end
+    return set
+  end
+
+  -- Helper: get files changed by a set of commits
+  local function get_files_from_commits(commit_set)
+    local files = {}
+    local seen = {}
+    for hash, _ in pairs(commit_set) do
+      local changed = vim.fn.systemlist('git diff-tree --no-commit-id -r --name-only ' .. hash)
+      for _, file in ipairs(changed) do
+        if not seen[file] then
+          seen[file] = true
+          table.insert(files, file)
+        end
+      end
+    end
+    table.sort(files)
+    return files
+  end
+
+  -- Helper: subtract commits of branch_a and branch_b from current branch commits
+  local function subtract_commits(current_commits, branch_a_commits, branch_b_commits)
+    local result = {}
+    for hash, _ in pairs(current_commits) do
+      if not branch_a_commits[hash] and not branch_b_commits[hash] then
+        result[hash] = true
+      end
+    end
+    return result
+  end
+
+  -- Step 1: Get current branch name
+  local current_branch = vim.fn.system('git branch --show-current'):gsub('\n', '')
+
+  if current_branch == '' then
+    notify('Not on a git branch', vim.log.levels.ERROR, { title = 'Git Diff' })
+    return
+  end
+
+  -- Step 2: Pick first branch to exclude
+  require('telescope.builtin').git_branches {
+    prompt_title = 'Select First Branch to Exclude (e.g. main)',
+    attach_mappings = function(prompt_bufnr_a)
+      actions.select_default:replace(function()
+        local selection_a = action_state.get_selected_entry()
+        actions.close(prompt_bufnr_a)
+        if not selection_a then
+          return
+        end
+
+        local branch_a = selection_a.value
+
+        -- Step 3: Pick second branch to exclude
+        require('telescope.builtin').git_branches {
+          prompt_title = 'Select Second Branch to Exclude (e.g. INT-144)',
+          attach_mappings = function(prompt_bufnr_b)
+            actions.select_default:replace(function()
+              local selection_b = action_state.get_selected_entry()
+              actions.close(prompt_bufnr_b)
+              if not selection_b then
+                return
+              end
+
+              local branch_b = selection_b.value
+
+              -- Step 4: Loading notification
+              local loading_id =
+                notify('Calculating your commits vs ' .. branch_a .. ' and ' .. branch_b .. '...', vim.log.levels.INFO, { title = 'Git Diff', timeout = false })
+
+              -- Step 5: Get commits for each branch
+              local current_commits = get_commits(current_branch)
+              local branch_a_commits = get_commits(branch_a)
+              local branch_b_commits = get_commits(branch_b)
+
+              -- Step 6: Subtract branch A and B commits from current branch commits
+              local exclusive_commits = subtract_commits(current_commits, branch_a_commits, branch_b_commits)
+
+              if vim.tbl_isempty(exclusive_commits) then
+                notify('No exclusive commits found in ' .. current_branch, vim.log.levels.WARN, {
+                  title = 'Git Diff',
+                  replace = loading_id,
+                  timeout = 3000,
+                })
+                return
+              end
+
+              -- Step 7: Get files from exclusive commits
+              local files = get_files_from_commits(exclusive_commits)
+
+              if #files == 0 then
+                notify('No changed files found in exclusive commits', vim.log.levels.WARN, {
+                  title = 'Git Diff',
+                  replace = loading_id,
+                  timeout = 3000,
+                })
+                return
+              end
+
+              -- Step 8: Show file picker
+              notify('Found ' .. #files .. ' files ✔', vim.log.levels.INFO, {
+                title = 'Git Diff',
+                replace = loading_id,
+                timeout = 800,
+              })
+
+              pickers
+                .new({}, {
+                  prompt_title = 'Your files in ' .. current_branch .. ' (' .. #files .. ' files, excl. ' .. branch_a .. ' & ' .. branch_b .. ')',
+                  finder = finders.new_table {
+                    results = files,
+                  },
+                  previewer = conf.file_previewer {},
+                  sorter = conf.generic_sorter {},
+                })
+                :find()
+            end)
+            return true
+          end,
+        }
+      end)
+      return true
+    end,
+  }
+end, { desc = '[P]roject [A]ll files changed exclusively in current branch' })
 
 -- always place at the last line(startup time tracker)
 vim.api.nvim_create_autocmd('UIEnter', {
