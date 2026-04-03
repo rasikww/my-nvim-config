@@ -1,98 +1,21 @@
---[[
---
-
-=====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
-=====================================================================
-========                                    .-----.          ========
-========         .----------------------.   | === |          ========
-========         |.-""""""""""""""""""-.|   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||   KICKSTART.NVIM   ||   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||                    ||   |-----|          ========
-========         ||:Tutor              ||   |:::::|          ========
-========         |'-..................-'|   |____o|          ========
-========         `"")----------------(""`   ___________      ========
-========        /::::::::::|  |::::::::::\  \ no mouse \     ========
-========       /:::========|  |==hjkl==:::\  \ required \    ========
-========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
-========                                                     ========
-=====================================================================
-=====================================================================
-
-What is Kickstart?
-
-  Kickstart.nvim is *not* a distribution.
-
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
-
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving Kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
-
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
-
-    After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
-
-Kickstart Guide:
-
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know the Neovim basics, you can skip this step.)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua.
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite Neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not exactly sure of what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or Neovim features used in Kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help you understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your Neovim config.
-
-
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
-
+-- track time
+vim.g.nvim_start_time = vim.loop.hrtime()
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+local env_file = vim.fn.stdpath 'config' .. '/.env'
+
+if vim.fn.filereadable(env_file) == 1 then
+  for _, line in ipairs(vim.fn.readfile(env_file)) do
+    local key, value = line:match '^([^=]+)=(.+)$'
+    if key and value then
+      vim.env[key] = value
+    end
+  end
+end
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
@@ -116,9 +39,18 @@ vim.o.showmode = false
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-vim.schedule(function()
-  vim.o.clipboard = 'unnamedplus'
-end)
+-- vim.schedule(function()
+--   vim.o.clipboard = 'unnamedplus'
+-- end)
+-- vim.opt.clipboard = 'unnamedplus'
+vim.api.nvim_create_autocmd('UIEnter', {
+  once = true,
+  callback = function()
+    vim.defer_fn(function()
+      vim.o.clipboard = 'unnamedplus'
+    end, 100)
+  end,
+})
 
 -- Enable break indent
 vim.o.breakindent = true
@@ -209,12 +141,19 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 
 -- My key maps
 vim.keymap.set('n', '<leader>bd', ':bdelete<CR>', { desc = 'Close current buffer' })
-vim.keymap.set('n', '<leader>br', ':BufferlineCloseRight<CR>', { desc = 'Close buffers to the right' })
+vim.keymap.set('n', '<leader>br', ':BufferLineCloseRight<CR>', { desc = 'Close buffers to the right' })
+vim.keymap.set('n', '<leader>bl', ':BufferLineCloseLeft<CR>', { desc = 'Close buffers to the left' })
+vim.keymap.set('n', '<leader>bp', ':BufferLinePick<CR>', { desc = 'Pick buffer' })
 vim.keymap.set('n', '<S-Tab>', '<C-^>', { desc = 'Toggle last buffer' })
-vim.keymap.set('n', '<leader>bn', ':bnext<CR>', { desc = 'Next buffer' })
-vim.keymap.set('n', '<leader>bp', ':bprev<CR>', { desc = 'Prev buffer' })
 vim.keymap.set('i', 'jj', '<Esc>', { noremap = true, silent = true })
 vim.keymap.set('i', 'kk', '<Esc>', { noremap = true, silent = true })
+-- vim.keymap.set('v', 'J', ":move '>+1<CR>gv=gv") -- Move selected line(s) down
+-- vim.keymap.set('v', 'K', ":move '<-2<CR>gv=gv") -- Move selected line(s) up
+vim.keymap.set('n', 'x', '"_x') -- Don't copy when deleting a character
+vim.keymap.set('n', 'd', '"_d') -- Don't copy when deleting
+vim.keymap.set('v', 'd', '"_d') -- Don't copy when deleting
+vim.keymap.set('n', 'D', '"_D') -- Don't copy when deleting
+vim.keymap.set('v', 'D', '"_D') -- Don't copy when deleting
 
 vim.o.undofile = true
 vim.o.undodir = vim.fn.stdpath 'state' .. '/undodir'
@@ -224,6 +163,65 @@ vim.fn.mkdir(vim.o.undodir, 'p') -- create dir if it doesn't exist
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
+
+-- tailwindclass sort on save
+-- no need to run this prettier sorts it better
+-- vim.api.nvim_create_autocmd('BufWritePre', {
+--   pattern = { '*.tsx', '*.jsx', '*.ts', '*.js' },
+--   callback = function()
+--     vim.cmd 'TailwindSort'
+--   end,
+-- })
+
+-- wrap selection with characters
+vim.api.nvim_create_user_command('Wrap', function()
+  local chars = vim.fn.input 'Enter surrounding chars (e.g., "", [], {}, ({})): '
+
+  local open, close
+
+  if #chars == 2 then
+    open = chars:sub(1, 1)
+    close = chars:sub(2, 2)
+  elseif #chars == 4 then
+    open = chars:sub(1, 2)
+    close = chars:sub(3, 4)
+  else
+    vim.notify('Please enter either 2 or 4 characters (e.g., "", [], ({}))', vim.log.levels.WARN)
+    return
+  end
+
+  local mode = vim.fn.visualmode()
+
+  local start_pos = vim.api.nvim_buf_get_mark(0, '<')
+  local end_pos = vim.api.nvim_buf_get_mark(0, '>')
+
+  local start_line = start_pos[1] - 1
+  local end_line = end_pos[1] - 1
+
+  local start_col, end_col
+
+  if mode == 'V' then
+    start_col = 0
+    end_col = #vim.api.nvim_buf_get_lines(0, end_line, end_line + 1, false)[1]
+  else
+    start_col = start_pos[2]
+    end_col = end_pos[2] + 1
+  end
+
+  local lines = vim.api.nvim_buf_get_text(0, start_line, start_col, end_line, end_col, {})
+
+  if #lines == 0 then
+    return
+  end
+
+  -- Wrap
+  lines[1] = open .. lines[1]
+  lines[#lines] = lines[#lines] .. close
+
+  vim.api.nvim_buf_set_text(0, start_line, start_col, end_line, end_col, lines)
+end, { range = true })
+
+vim.keymap.set('v', '<leader>w', ':Wrap<CR>', { silent = true, desc = '[W]rap selection' })
 
 -- Visual line at 80 characters
 vim.opt.colorcolumn = '80'
@@ -370,6 +368,8 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>b', group = '[B]ufferline', mode = { 'n' } },
+        { '<leader>p', group = '[P]ull Request', mode = { 'n' } },
       },
     },
   },
@@ -396,13 +396,14 @@ require('lazy').setup({
         -- `cond` is a condition used to determine whether this plugin should be
         -- installed and loaded.
         cond = function()
-          return vim.fn.executable 'make' == 1
+          return vim.fn.executable 'make' == 0 --1 if want to add fzf
         end,
       },
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      'debugloop/telescope-undo.nvim',
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -426,19 +427,177 @@ require('lazy').setup({
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
+      local actions = require 'telescope.actions'
+      local action_state = require 'telescope.actions.state'
+      local custom_enter_function = function(prompt_bufnr)
+        local entry = require('telescope.actions.state').get_selected_entry()
+        require('telescope.actions').close(prompt_bufnr)
+
+        if not entry or not (entry.path or entry.filename) then
+          print 'Invalid file entry'
+          return
+        end
+
+        local raw_path = entry.path or entry.filename
+        local fixed_path = raw_path:gsub('\\', '/')
+        local escaped_path = vim.fn.fnameescape(fixed_path)
+
+        -- Get line and column if available (for live_grep / grep_string)
+        local lnum = entry.lnum or entry.line
+        local col = entry.col
+
+        if lnum then
+          -- jump to specific line (and column if available)
+          vim.cmd(string.format('edit +%d %s', lnum, escaped_path))
+          if col then
+            vim.schedule(function()
+              vim.fn.cursor(lnum, col)
+            end)
+          end
+        else
+          -- regular open
+          vim.cmd('edit ' .. escaped_path)
+        end
+      end
+
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          layout_strategy = 'vertical',
+          layout_config = {
+            prompt_position = 'bottom', -- prompt at the bottom
+            width = 0.95,
+            height = 0.95,
+            preview_cutoff = 1, -- always show preview (important)
+            vertical = {
+              width = 0.95,
+              height = 0.95,
+              preview_height = 0.5, -- preview takes top half
+            },
+          },
+          mappings = {
+            n = {
+              ['d'] = require('telescope.actions').delete_buffer,
+            }, -- n
+            i = {
+              ['<c-d>'] = require('telescope.actions').delete_buffer,
+
+              ['<C-j>'] = actions.preview_scrolling_down,
+              ['<C-k>'] = actions.preview_scrolling_up,
+              ['<C-h>'] = actions.preview_scrolling_left,
+              ['<C-l>'] = actions.preview_scrolling_right,
+            }, -- i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          },
+        },
         -- pickers = {}
+        pickers = {
+          find_files = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+            },
+            find_command = {
+              'rg',
+              '--files',
+              '--hidden',
+              '--glob',
+              '!.git/',
+              '--path-separator',
+              '/',
+            },
+          },
+          oldfiles = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+            },
+          },
+          search_history = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+            },
+          },
+          live_grep = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+            },
+          },
+          lsp_references = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+              },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+            },
+          },
+          lsp_definitions = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+              },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+            },
+          },
+          lsp_implementations = {
+            mappings = {
+              i = {
+                ['<CR>'] = custom_enter_function,
+              },
+              n = {
+                ['<CR>'] = custom_enter_function,
+                ['<C-y>'] = custom_enter_function,
+              },
+            },
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
+          },
+          undo = {
+            use_delta = true,
+            use_custom_command = nil, -- setting this implies `use_delta = false`. Accepted format is: { "bash", "-c", "echo '$DIFF' | delta" }
+            side_by_side = true,
+            vim_diff_opts = {
+              ctxlen = vim.o.scrolloff,
+            },
+            entry_format = 'state #$ID, $STAT, $TIME',
+            time_format = '%Y-%m-%d %H:%M:%S',
+            saved_only = false, -- telescope-undo.nvim config, see below
           },
         },
       }
@@ -446,6 +605,7 @@ require('lazy').setup({
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      require('telescope').load_extension 'undo'
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -459,6 +619,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>u', '<cmd>Telescope undo<cr>')
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -714,6 +875,12 @@ require('lazy').setup({
           -- capabilities = {},
           settings = {
             Lua = {
+              runtime = {
+                version = 'luaJIT',
+              },
+              workspace = { checkThirdParty = false },
+              diagnostics = { globals = { 'vim' } },
+              hint = { enable = true },
               completion = {
                 callSnippet = 'Replace',
               },
@@ -744,7 +911,7 @@ require('lazy').setup({
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        ensure_installed = { 'ts_ls', 'tailwindcss' }, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
+        ensure_installed = { 'tailwindcss', 'pyright' }, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
         handlers = {
           function(server_name)
@@ -770,7 +937,7 @@ require('lazy').setup({
         function()
           require('conform').format { async = true, lsp_format = 'fallback' }
         end,
-        mode = '',
+        mode = 'n',
         desc = '[F]ormat buffer',
       },
     },
@@ -785,7 +952,7 @@ require('lazy').setup({
           return nil
         else
           return {
-            timeout_ms = 500,
+            timeout_ms = 2000,
             lsp_format = 'fallback',
           }
         end
@@ -793,10 +960,50 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'isort', 'black', 'flake8' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
+        javascriptreact = { 'prettierd', 'prettier', stop_after_first = true },
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettier', 'prettierd', stop_after_first = true }, --changing this because it was conflicting after an npm install
+        vue = { 'prettierd', 'prettier', stop_after_first = true },
+        svelte = { 'prettierd', 'prettier', stop_after_first = true },
+        astro = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Markup
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        xml = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Styles
+        css = { 'prettierd', 'prettier', stop_after_first = true },
+        scss = { 'prettierd', 'prettier', stop_after_first = true },
+        less = { 'prettierd', 'prettier', stop_after_first = true },
+        stylus = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Data / Config
+        json = { 'prettierd', 'prettier', stop_after_first = true },
+        jsonc = { 'prettierd', 'prettier', stop_after_first = true },
+        yaml = { 'prettierd', 'prettier', stop_after_first = true },
+        toml = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Database
+        sql = { 'prettierd', 'prettier', stop_after_first = true },
+        prisma = { 'prettierd', 'prettier', stop_after_first = true },
+        dbml = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Markdown
+        markdown = { 'prettierd', 'prettier', stop_after_first = true },
+        mdx = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Misc Config
+        conf = { 'prettierd', 'prettier', stop_after_first = true },
+        ini = { 'prettierd', 'prettier', stop_after_first = true },
+        dotenv = { 'prettierd', 'prettier', stop_after_first = true },
+
+        -- Shell
+        sh = { 'prettierd', 'prettier', stop_after_first = true },
+        bash = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -810,6 +1017,7 @@ require('lazy').setup({
       {
         'L3MON4D3/LuaSnip',
         version = '2.*',
+        lazy = true,
         build = (function()
           -- Build Step is needed for regex support in snippets.
           -- This step is not supported in many windows environments.
@@ -823,12 +1031,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
         opts = {},
       },
@@ -860,6 +1068,8 @@ require('lazy').setup({
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
         preset = 'default',
+        ['<C-d>'] = { 'scroll_documentation_down', 'fallback' },
+        ['<C-u>'] = { 'scroll_documentation_up', 'fallback' },
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -874,7 +1084,18 @@ require('lazy').setup({
       completion = {
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = { auto_show = true, auto_show_delay_ms = 500 },
+        menu = {
+          auto_show = true,
+          draw = {
+            treesitter = { 'lsp' },
+            columns = {
+              { 'kind_icon' },
+              { 'label', 'label_description', gap = 1 },
+              { 'kind' },
+            },
+          },
+        },
       },
 
       sources = {
@@ -893,7 +1114,7 @@ require('lazy').setup({
       -- the rust implementation via `'prefer_rust_with_warning'`
       --
       -- See :h blink-cmp-config-fuzzy for more information
-      fuzzy = { implementation = 'lua' },
+      fuzzy = { implementation = 'prefer_rust_with_warning' },
 
       -- Shows a signature help window while you type arguments for a function
       signature = { enabled = true },
@@ -904,8 +1125,10 @@ require('lazy').setup({
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
   { -- Collection of various small independent plugins/modules
-    'echasnovski/mini.nvim',
+    'nvim-mini/mini.nvim',
     config = function()
+      require('mini.move').setup()
+      require('mini.cursorword').setup()
       -- Better Around/Inside textobjects
       --
       -- Examples:
@@ -942,11 +1165,30 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    dependencies = { 'OXY2DEV/markview.nvim' },
+    lazy = false,
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'typescript', 'javascript' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'typescript',
+        'javascript',
+        'python',
+        'json',
+        'yaml',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -1013,3 +1255,408 @@ require('lazy').setup({
 })
 
 -- vim: ts=2 sts=2 sw=2 et
+--
+-- Function to get visual selection text
+local function get_visual_selection()
+  local _, csrow, cscol, _ = unpack(vim.fn.getpos "'<")
+  local _, cerow, cecol, _ = unpack(vim.fn.getpos "'>")
+
+  if csrow == cerow then
+    return vim.fn.getline(csrow):sub(cscol, cecol)
+  end
+
+  local lines = vim.fn.getline(csrow, cerow)
+  lines[1] = lines[1]:sub(cscol)
+  lines[#lines] = lines[#lines]:sub(1, cecol)
+  return table.concat(lines, '\n')
+end
+
+-- Define a command to insert console.log of visual selection
+vim.api.nvim_create_user_command('InsertConsoleLogVisual', function()
+  local selected = get_visual_selection()
+  if selected == '' then
+    vim.notify('No selection detected', vim.log.levels.WARN)
+    return
+  end
+  local log_line = "console.log('" .. selected .. ":', " .. selected .. ');'
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  vim.api.nvim_buf_set_lines(0, row, row, false, { log_line })
+end, {})
+
+-- Define a command to insert print() of visual selection
+vim.api.nvim_create_user_command('InsertPrintVisual', function()
+  local selected = get_visual_selection()
+  if selected == '' then
+    vim.notify('No selection detected', vim.log.levels.WARN)
+    return
+  end
+  local log_line = "print('" .. selected .. ":', " .. selected .. ');'
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  vim.api.nvim_buf_set_lines(0, row, row, false, { log_line })
+end, {})
+
+-- Keymap for visual mode to insert log
+vim.keymap.set('v', '<leader>ll', ':<C-u>InsertConsoleLogVisual<CR>', { desc = 'Log selected text', silent = true })
+
+-- Keymap for visual mode to insert print
+vim.keymap.set('v', '<leader>lp', ':<C-u>InsertPrintVisual<CR>', { desc = 'Print selected text', silent = true })
+
+--keymap to save in edit mode
+vim.keymap.set('i', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
+vim.keymap.set('n', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
+vim.keymap.set('v', '<C-s>', '<Esc>:w<CR>', { desc = 'Save file', silent = true })
+
+-- Move in insert mode with Alt + hjkl
+vim.keymap.set('i', '<A-h>', '<Left>', { noremap = true, silent = true })
+vim.keymap.set('i', '<A-j>', '<Down>', { noremap = true, silent = true })
+vim.keymap.set('i', '<A-k>', '<Up>', { noremap = true, silent = true })
+vim.keymap.set('i', '<A-l>', '<Right>', { noremap = true, silent = true })
+
+--keymap to quickly navigate to front and back
+vim.keymap.set('n', 'H', '^', { noremap = true, silent = true })
+vim.keymap.set('n', 'L', '$', { noremap = true, silent = true })
+vim.keymap.set('v', 'H', '^', { noremap = true, silent = true })
+vim.keymap.set('v', 'L', '$', { noremap = true, silent = true })
+
+-- File format save as LF
+vim.opt.fileformats = { 'unix', 'dos' }
+vim.opt.fileformat = 'unix'
+
+-- borders
+vim.o.winborder = 'rounded'
+
+vim.diagnostic.config { underline = true }
+
+-- Quickfix and Location list mappings
+--[[ vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'qf',
+  callback = function()
+    local opts = { buffer = true, silent = true }
+
+    -- Check if it's a location list or quickfix list
+    local is_loclist = vim.fn.getloclist(0, { filewinid = 1 }).filewinid ~= 0
+
+    -- Enter: go to location and close list
+    vim.keymap.set('n', '<CR>', function()
+      local line = vim.fn.line '.'
+      if is_loclist then
+        vim.cmd(line .. 'll') -- jump to location list item
+        vim.cmd 'lclose'
+      else
+        vim.cmd(line .. 'cc') -- jump to quickfix item
+        vim.cmd 'cclose'
+      end
+    end, opts)
+  end,
+}) ]]
+
+--get default branch
+local function get_default_branch()
+  local default_branch = nil
+  -- Try symbolic-ref first (silence errors)
+  local ok, result = pcall(vim.fn.systemlist, 'git symbolic-ref --quiet refs/remotes/origin/HEAD')
+
+  if ok and result and result[1] and result[1] ~= '' then
+    default_branch = result[1]:gsub('refs/remotes/origin/', '')
+  end
+
+  -- Fallback: parse remote show origin
+  if not default_branch then
+    local remote_info = vim.fn.systemlist 'git remote show origin'
+    for _, line in ipairs(remote_info) do
+      local match = line:match 'HEAD branch: (.+)'
+      if match then
+        default_branch = match
+        break
+      end
+    end
+  end
+
+  -- Final fallback
+  if not default_branch or default_branch == '' then
+    default_branch = 'main'
+  end
+
+  return default_branch
+end
+
+--get list of changed files in the current branch compared to main
+vim.keymap.set('n', '<leader>pf', function()
+  local notify = vim.notify
+
+  local loading_id = notify('Loading changed files in the branch…', vim.log.levels.INFO, {
+    title = 'Git Diff',
+    timeout = false,
+  })
+
+  local default_branch = nil
+
+  -- Try symbolic-ref first (silence errors)
+  local ok, result = pcall(vim.fn.systemlist, 'git symbolic-ref --quiet refs/remotes/origin/HEAD')
+
+  if ok and result and result[1] and result[1] ~= '' then
+    default_branch = result[1]:gsub('refs/remotes/origin/', '')
+  end
+
+  -- Fallback: parse remote show origin
+  if not default_branch then
+    local remote_info = vim.fn.systemlist 'git remote show origin'
+    for _, line in ipairs(remote_info) do
+      local match = line:match 'HEAD branch: (.+)'
+      if match then
+        default_branch = match
+        break
+      end
+    end
+  end
+
+  -- Final fallback
+  if not default_branch or default_branch == '' then
+    default_branch = 'main'
+  end
+
+  require('telescope.pickers')
+    .new({}, {
+      prompt_title = 'Changed Files (vs ' .. default_branch .. ')',
+      finder = require('telescope.finders').new_oneshot_job({
+        'git',
+        'diff',
+        '--name-only',
+        'origin/' .. default_branch .. '...HEAD',
+      }, {
+        on_exit = function()
+          vim.schedule(function()
+            notify('Files loaded ✔', vim.log.levels.INFO, {
+              title = 'Git Diff',
+              replace = loading_id,
+              timeout = 800,
+            })
+          end)
+        end,
+      }),
+      previewer = require('telescope.config').values.file_previewer {},
+      sorter = require('telescope.config').values.generic_sorter {},
+    })
+    :find()
+end, { desc = '[P]roject [F]iles changed from default branch' })
+
+-- get list of changed files in the current branch compared to user selected branch
+vim.keymap.set('n', '<leader>pc', function()
+  local pickers = require 'telescope.pickers'
+  local finders = require 'telescope.finders'
+  local conf = require('telescope.config').values
+  local actions = require 'telescope.actions'
+  local action_state = require 'telescope.actions.state'
+  local notify = vim.notify
+
+  -- Step 1: Open Branch Picker
+  require('telescope.builtin').git_branches {
+    prompt_title = 'Select Branch to Diff Against',
+    attach_mappings = function(prompt_bufnr, map)
+      actions.select_default:replace(function()
+        -- Get the selected branch name
+        local selection = action_state.get_selected_entry()
+        actions.close(prompt_bufnr)
+
+        if not selection then
+          return
+        end
+
+        -- The branch name (handles both local and remote)
+        local target_branch = selection.value
+
+        -- Step 2: Show loading notification
+        local loading_id = notify('Diffing against ' .. target_branch .. '...', vim.log.levels.INFO, {
+          title = 'Git Diff',
+          timeout = false,
+        })
+
+        -- Step 3: Launch the file picker for changed files
+        pickers
+          .new({}, {
+            prompt_title = 'Files changed vs ' .. target_branch,
+            finder = finders.new_oneshot_job({
+              'git',
+              'diff',
+              '--name-only',
+              target_branch .. '...HEAD',
+            }, {
+              on_exit = function()
+                vim.schedule(function()
+                  notify('Files loaded ✔', vim.log.levels.INFO, {
+                    title = 'Git Diff',
+                    replace = loading_id,
+                    timeout = 800,
+                  })
+                end)
+              end,
+            }),
+            previewer = conf.file_previewer {},
+            sorter = conf.generic_sorter {},
+          })
+          :find()
+      end)
+      return true
+    end,
+  }
+end, { desc = '[P]roject [C]hoose branch to diff' })
+
+vim.keymap.set('n', '<leader>pa', function()
+  local pickers = require 'telescope.pickers'
+  local finders = require 'telescope.finders'
+  local conf = require('telescope.config').values
+  local actions = require 'telescope.actions'
+  local action_state = require 'telescope.actions.state'
+  local notify = vim.notify
+
+  -- Helper: get commit hashes for a branch (no merges)
+  local function get_commits(branch)
+    local result = vim.fn.systemlist('git log --no-merges --format="%H" ' .. branch)
+    local set = {}
+    for _, hash in ipairs(result) do
+      hash = hash:gsub('"', '')
+      if hash ~= '' then
+        set[hash] = true
+      end
+    end
+    return set
+  end
+
+  -- Helper: get files changed by a set of commits
+  local function get_files_from_commits(commit_set)
+    local files = {}
+    local seen = {}
+    for hash, _ in pairs(commit_set) do
+      local changed = vim.fn.systemlist('git diff-tree --no-commit-id -r --name-only ' .. hash)
+      for _, file in ipairs(changed) do
+        if not seen[file] then
+          seen[file] = true
+          table.insert(files, file)
+        end
+      end
+    end
+    table.sort(files)
+    return files
+  end
+
+  -- Helper: subtract commits of branch_a and branch_b from current branch commits
+  local function subtract_commits(current_commits, branch_a_commits, branch_b_commits)
+    local result = {}
+    for hash, _ in pairs(current_commits) do
+      if not branch_a_commits[hash] and not branch_b_commits[hash] then
+        result[hash] = true
+      end
+    end
+    return result
+  end
+
+  -- Step 1: Get current branch name
+  local current_branch = vim.fn.system('git branch --show-current'):gsub('\n', '')
+
+  if current_branch == '' then
+    notify('Not on a git branch', vim.log.levels.ERROR, { title = 'Git Diff' })
+    return
+  end
+
+  -- Step 2: Pick first branch to exclude
+  require('telescope.builtin').git_branches {
+    prompt_title = 'Select First Branch to Exclude (e.g. main)',
+    attach_mappings = function(prompt_bufnr_a)
+      actions.select_default:replace(function()
+        local selection_a = action_state.get_selected_entry()
+        actions.close(prompt_bufnr_a)
+        if not selection_a then
+          return
+        end
+
+        local branch_a = selection_a.value
+
+        -- Step 3: Pick second branch to exclude
+        require('telescope.builtin').git_branches {
+          prompt_title = 'Select Second Branch to Exclude (e.g. INT-144)',
+          attach_mappings = function(prompt_bufnr_b)
+            actions.select_default:replace(function()
+              local selection_b = action_state.get_selected_entry()
+              actions.close(prompt_bufnr_b)
+              if not selection_b then
+                return
+              end
+
+              local branch_b = selection_b.value
+
+              -- Step 4: Loading notification
+              local loading_id =
+                notify('Calculating your commits vs ' .. branch_a .. ' and ' .. branch_b .. '...', vim.log.levels.INFO, { title = 'Git Diff', timeout = false })
+
+              -- Step 5: Get commits for each branch
+              local current_commits = get_commits(current_branch)
+              local branch_a_commits = get_commits(branch_a)
+              local branch_b_commits = get_commits(branch_b)
+
+              -- Step 6: Subtract branch A and B commits from current branch commits
+              local exclusive_commits = subtract_commits(current_commits, branch_a_commits, branch_b_commits)
+
+              if vim.tbl_isempty(exclusive_commits) then
+                notify('No exclusive commits found in ' .. current_branch, vim.log.levels.WARN, {
+                  title = 'Git Diff',
+                  replace = loading_id,
+                  timeout = 3000,
+                })
+                return
+              end
+
+              -- Step 7: Get files from exclusive commits
+              local files = get_files_from_commits(exclusive_commits)
+
+              if #files == 0 then
+                notify('No changed files found in exclusive commits', vim.log.levels.WARN, {
+                  title = 'Git Diff',
+                  replace = loading_id,
+                  timeout = 3000,
+                })
+                return
+              end
+
+              -- Step 8: Show file picker
+              notify('Found ' .. #files .. ' files ✔', vim.log.levels.INFO, {
+                title = 'Git Diff',
+                replace = loading_id,
+                timeout = 800,
+              })
+
+              pickers
+                .new({}, {
+                  prompt_title = 'Your files in ' .. current_branch .. ' (' .. #files .. ' files, excl. ' .. branch_a .. ' & ' .. branch_b .. ')',
+                  finder = finders.new_table {
+                    results = files,
+                  },
+                  previewer = conf.file_previewer {},
+                  sorter = conf.generic_sorter {},
+                })
+                :find()
+            end)
+            return true
+          end,
+        }
+      end)
+      return true
+    end,
+  }
+end, { desc = '[P]roject [A]ll files changed exclusively in current branch' })
+
+-- always place at the last line(startup time tracker)
+vim.api.nvim_create_autocmd('UIEnter', {
+  callback = function()
+    vim.schedule(function()
+      local total_ms = math.floor((vim.loop.hrtime() - vim.g.nvim_start_time) / 1e6)
+      local lazy_stats = require('lazy').stats()
+      local plugin_ms = math.floor(lazy_stats.startuptime)
+      -- vim.notify('✨ Neovim started in ' .. total_ms .. ' ms\n' .. '📦 Plugins loaded in ' .. plugin_ms .. ' ms', vim.log.levels.INFO)
+      vim.api.nvim_echo({
+        { '✨ Neovim started in ' .. total_ms .. ' ms  ', 'Normal' },
+        { '📦 Plugins loaded in ' .. plugin_ms .. ' ms', 'Comment' },
+      }, true, {})
+      vim.cmd 'redraw'
+    end)
+  end,
+})

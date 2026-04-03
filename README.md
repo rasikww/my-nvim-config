@@ -1,3 +1,20 @@
+Add following setting to the windows terminal settings.json if you are using windows terminal to get 'ctrl+space'
+code completion to work correctly. settings.json  can be found in the `C:\Users\<username>\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json`.
+
+```json
+{
+    "actions": [
+        {
+            "keys": "ctrl+space",
+            "command": {
+                "action": "sendInput",
+                "input": "u\001b[32;5u"
+            }
+        }
+    ]
+}
+```
+
 # kickstart.nvim
 
 ## Introduction
