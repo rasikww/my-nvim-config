@@ -3,12 +3,10 @@ vim.pack.add({
 	{ src = "https://github.com/nvim-lua/plenary.nvim" },
 	{ src = "https://github.com/nvim-tree/nvim-web-devicons" },
 	{ src = "https://github.com/MunifTanjim/nui.nvim" },
-	{ src = "https://github.com/antosha417/nvim-lsp-file-operations" },
 	--actual plugin
 	{ src = "https://github.com/nvim-neo-tree/neo-tree.nvim", version = "v3.x" },
+	{ src = "https://github.com/antosha417/nvim-lsp-file-operations" },
 })
-
-require("lsp-file-operations").setup()
 
 require("neo-tree").setup({
 	filesystem = {
@@ -31,5 +29,7 @@ require("neo-tree").setup({
 		},
 	},
 })
+
+require("lsp-file-operations").setup()
 
 vim.keymap.set({ "n", "v" }, "\\", "<cmd>Neotree reveal<cr>", { desc = "NeoTree Reveal", silent = true })
