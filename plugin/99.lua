@@ -1,0 +1,71 @@
+vim.pack.add({
+	{ src = "https://github.com/ThePrimeagen/99" },
+})
+
+local _99 = require("99")
+local cwd = vim.uv.cwd()
+-- local basename = vim.fs.basename(cwd)
+_99.setup({
+	model = "opencode/big-pickle",
+	logger = {
+		level = _99.INFO,
+		-- path = '/tmp/' .. basename .. '.99.debug',
+		path = cwd .. "/99.debug",
+		print_on_error = true,
+	},
+
+	--- A new feature that is centered around tags
+	completion = {
+		--- Defaults to .cursor/rules
+		-- I am going to disable these until i understand the
+		-- problem better.  Inside of cursor rules there is also
+		-- application rules, which means i need to apply these
+		-- differently
+		-- cursor_rules = "<custom path to cursor rules>"
+
+		--- A list of folders where you have your own SKILL.md
+		--- Expected format:
+		--- /path/to/dir/<skill_name>/SKILL.md
+		---
+		--- Example:
+		--- Input Path:
+		--- "scratch/custom_rules/"
+		---
+		--- Output Rules:
+		--- {path = "scratch/custom_rules/vim/SKILL.md", name = "vim"},
+		--- ... the other rules in that dir ...
+		---
+		-- custom_rules = {
+		--   'scratch/custom_rules/',
+		-- },
+
+		--- What autocomplete do you use.  We currently only
+		--- support cmp right now
+		-- source = "blink",
+	},
+
+	--- WARNING: if you change cwd then this is likely broken
+	--- ill likely fix this in a later change
+	---
+	--- md_files is a list of files to look for and auto add based on the location
+	--- of the originating request.  That means if you are at /foo/bar/baz.lua
+	--- the system will automagically look for:
+	--- /foo/bar/AGENT.md
+	--- /foo/AGENT.md
+	--- assuming that /foo is project root (based on cwd)
+	-- md_files = {
+	--   'AGENT.md',
+	-- },
+})
+
+vim.keymap.set("v", "<leader>a99", function()
+	_99.visual()
+end, { desc = "99: Visual" })
+
+vim.keymap.set({ "n", "v" }, "<leader>a9s", function()
+	_99.search()
+end, { desc = "99: Search" })
+
+vim.keymap.set({ "n", "v" }, "<leader>a9x", function()
+	_99.stop_all_requests()
+end, { desc = "99: Stop all requests" })
