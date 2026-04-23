@@ -14,3 +14,5 @@ require("todo-comments").setup({})
 --HACK:
 --FIX:
 --TEST:
+
+require("vim._core.ui2").enable()
