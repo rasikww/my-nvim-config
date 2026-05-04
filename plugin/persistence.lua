@@ -48,32 +48,42 @@ vim.api.nvim_create_autocmd("VimEnter", {
 	end,
 })
 
-vim.api.nvim_create_autocmd("VimLeavePre", {
+vim.api.nvim_create_autocmd({ "FocusLost", "QuitPre", "VimLeavePre" }, {
 	group = vim.api.nvim_create_augroup("PersistenceSession", { clear = true }),
 	callback = function()
-		local bufs = vim.tbl_filter(function(buf)
-			return vim.bo[buf].buflisted and vim.bo[buf].buftype == ""
-		end, vim.api.nvim_list_bufs())
-
-		if #bufs >= 1 then
-			if vim.fn.exists(":Neotree") == 2 then
-				vim.cmd("Neotree close")
-			end
-
-			print("Saving session...")
-			persistence.save()
-		else
-			print("Not enough buffers to save session")
-		end
+		-- local bufs = vim.api.nvim_list_bufs()
+		-- local filtered = {}
+		--
+		-- for _, buf in ipairs(bufs) do
+		-- 	if vim.bo[buf].buflisted and vim.bo[buf].buftype == "" then
+		-- 		table.insert(filtered, buf)
+		-- 	end
+		-- end
+		-- -- local bufs = vim.tbl_filter(function(buf)
+		-- -- 	return vim.bo[buf].buflisted and vim.bo[buf].buftype == ""
+		-- -- end, vim.api.nvim_list_bufs())
+		--
+		-- if #filtered >= 1 then
+		print("Saving session...")
+		persistence.save()
+		-- else
+		-- print("Not enough buffers to save session")
+		-- end
 	end,
 })
 
--- vim.keymap.set('n', '<leader>qs', function()
---   persistence.load()
--- end, { desc = 'Load session' })
+-- vim.keymap.set("n", "<leader>pl", function()
+-- 	print("Manually Loading session...")
+-- 	persistence.load()
+-- end, { desc = "Load session" })
+-- vim.keymap.set("n", "<leader>ps", function()
+-- 	print("Manually saving session...")
+-- 	persistence.save()
+-- end, { desc = "Save session" })
 -- vim.keymap.set('n', '<leader>qS', function()
 --   persistence.select()
 -- end, { desc = 'Select session' })
 -- vim.keymap.set('n', '<leader>qd', function()
 --   persistence.stop()
 -- end, { desc = 'Stop persistence' })
+--
