@@ -48,7 +48,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 	end,
 })
 
-vim.api.nvim_create_autocmd({ "FocusLost", "QuitPre", "VimLeavePre" }, {
+vim.api.nvim_create_autocmd({ "QuitPre", "VimLeavePre" }, {
 	group = vim.api.nvim_create_augroup("PersistenceSession", { clear = true }),
 	callback = function()
 		-- local bufs = vim.api.nvim_list_bufs()
@@ -72,14 +72,36 @@ vim.api.nvim_create_autocmd({ "FocusLost", "QuitPre", "VimLeavePre" }, {
 	end,
 })
 
--- vim.keymap.set("n", "<leader>pl", function()
--- 	print("Manually Loading session...")
--- 	persistence.load()
--- end, { desc = "Load session" })
--- vim.keymap.set("n", "<leader>ps", function()
--- 	print("Manually saving session...")
--- 	persistence.save()
--- end, { desc = "Save session" })
+vim.keymap.set("n", "<leader>pl", function()
+	-- 1. Check for unsaved changes in any listed buffer
+	local modified = false
+	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+		if vim.bo[buf].modified and vim.bo[buf].buflisted then
+			modified = true
+			break
+		end
+	end
+
+	-- 2. If modified, ask for confirmation or warn
+	if modified then
+		vim.notify("You have unsaved changes! Save them or hide them before loading.", vim.log.levels.ERROR)
+		return
+	end
+
+	-- 3. Otherwise, proceed with the purge and load
+	if session_exists() then
+		print("Cleaning up and loading session...")
+		vim.cmd("silent! %bd")
+		persistence.load()
+	else
+		vim.notify("Load aborted: No session file.", vim.log.levels.WARN)
+	end
+end, { desc = "Purge and load session safely" })
+
+vim.keymap.set("n", "<leader>ps", function()
+	print("Manually saving session...")
+	persistence.save()
+end, { desc = "Save session" })
 -- vim.keymap.set('n', '<leader>qS', function()
 --   persistence.select()
 -- end, { desc = 'Select session' })
