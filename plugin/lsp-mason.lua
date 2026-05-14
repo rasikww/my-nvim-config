@@ -47,6 +47,12 @@ vim.lsp.config("lua_ls", {
 	},
 })
 
+-- install postgres_lsp of supabase using mason to get this to work
+vim.lsp.config("postgres_lsp", {
+	filetypes = { "sql", "psql" },
+	root_markers = { ".git" },
+})
+
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
 	callback = function(event)
