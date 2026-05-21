@@ -48,7 +48,8 @@ require("conform").setup({
 		toml = { "prettierd", "prettier", stop_after_first = true },
 
 		-- Database
-		sql = { "prettierd", "prettier", stop_after_first = true },
+		sql = { "sql_formatter" },
+		["*"] = { "injected" },
 		prisma = { "prettierd", "prettier", stop_after_first = true },
 		dbml = { "prettierd", "prettier", stop_after_first = true },
 
@@ -64,6 +65,11 @@ require("conform").setup({
 		-- Shell
 		sh = { "prettierd", "prettier", stop_after_first = true },
 		bash = { "prettierd", "prettier", stop_after_first = true },
+	},
+	formatters = {
+		sql_formatter = {
+			prepend_args = { "-l", "postgresql", "--config", [[{"expressionWidth": 80, "keywordCase": "upper"}]] },
+		},
 	},
 })
 
