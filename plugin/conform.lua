@@ -48,7 +48,7 @@ require("conform").setup({
 		toml = { "prettierd", "prettier", stop_after_first = true },
 
 		-- Database
-		sql = { "sql_formatter" },
+		-- sql = { "sql_formatter" },
 		["*"] = { "injected" },
 		prisma = { "prettierd", "prettier", stop_after_first = true },
 		dbml = { "prettierd", "prettier", stop_after_first = true },
