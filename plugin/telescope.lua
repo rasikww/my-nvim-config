@@ -228,3 +228,60 @@ vim.api.nvim_create_autocmd("VimEnter", {
 		end, { desc = "[S]earch [N]eovim files" })
 	end,
 })
+
+local function telescope_file_history()
+	local ok, pickers = pcall(require, "telescope.pickers")
+	if not ok then
+		vim.notify("Telescope is not fully loaded yet", vim.log.levels.ERROR)
+		return
+	end
+
+	local finders = require("telescope.finders")
+	local conf = require("telescope.config").values
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+
+	local current_file = vim.api.nvim_buf_get_name(0)
+	if current_file == "" then
+		vim.notify("No file active in current buffer", vim.log.levels.WARN)
+		return
+	end
+
+	-- Use vim.fn.systemlist to grab the log cleanly as an array of lines
+	-- We wrap the path in quotes to ensure Windows spaces don't break the shell argument
+	local cmd_str = string.format('git log --pretty=format:"%%h - %%s" --follow -- "%s"', current_file)
+	local results = vim.fn.systemlist(cmd_str)
+
+	-- Check if git actually returned anything or threw an error
+	if vim.v.shell_error ~= 0 or #results == 0 then
+		vim.notify("Failed to get git log for this file", vim.log.levels.WARN)
+		return
+	end
+
+	pickers
+		.new({}, {
+			prompt_title = "File History (" .. vim.fs.basename(current_file) .. ")",
+			-- Fed into a static table instead of an async job stream
+			finder = finders.new_table({
+				results = results,
+			}),
+			sorter = conf.generic_sorter({}),
+			attach_mappings = function(prompt_bufnr, map)
+				actions.select_default:replace(function()
+					local selection = action_state.get_selected_entry()
+					actions.close(prompt_bufnr)
+
+					if selection and selection[1] then
+						local commit_hash = string.match(selection[1], "^(%w+)")
+						if commit_hash then
+							require("gitsigns").diffthis(commit_hash)
+						end
+					end
+				end)
+				return true
+			end,
+		})
+		:find()
+end
+
+vim.keymap.set("n", "<leader>gfh", telescope_file_history, { desc = "Telescope File History Diff" })
