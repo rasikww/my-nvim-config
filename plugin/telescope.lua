@@ -240,6 +240,7 @@ local function telescope_file_history()
 	local conf = require("telescope.config").values
 	local actions = require("telescope.actions")
 	local action_state = require("telescope.actions.state")
+	local previewers = require("telescope.previewers")
 
 	local current_file = vim.api.nvim_buf_get_name(0)
 	if current_file == "" then
@@ -247,12 +248,9 @@ local function telescope_file_history()
 		return
 	end
 
-	-- Use vim.fn.systemlist to grab the log cleanly as an array of lines
-	-- We wrap the path in quotes to ensure Windows spaces don't break the shell argument
 	local cmd_str = string.format('git log --pretty=format:"%%h - %%s" --follow -- "%s"', current_file)
 	local results = vim.fn.systemlist(cmd_str)
 
-	-- Check if git actually returned anything or threw an error
 	if vim.v.shell_error ~= 0 or #results == 0 then
 		vim.notify("Failed to get git log for this file", vim.log.levels.WARN)
 		return
@@ -261,11 +259,30 @@ local function telescope_file_history()
 	pickers
 		.new({}, {
 			prompt_title = "File History (" .. vim.fs.basename(current_file) .. ")",
-			-- Fed into a static table instead of an async job stream
 			finder = finders.new_table({
 				results = results,
 			}),
 			sorter = conf.generic_sorter({}),
+
+			-- Dynamic live preview engine
+			previewer = previewers.new_buffer_previewer({
+				title = "Commit Diff Preview",
+				define_preview = function(self, entry, status)
+					-- Extract the hash from the current highlighted entry
+					local commit_hash = string.match(entry[1], "^(%w+)")
+
+					-- Run git show for this file at this precise commit
+					local preview_cmd = string.format('git show --stat --patch %s -- "%s"', commit_hash, current_file)
+					local diff_output = vim.fn.systemlist(preview_cmd)
+
+					-- Safely dump the text output into the telescope preview buffer
+					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, diff_output)
+
+					-- Apply standard git diff syntax highlighting automatically
+					vim.api.nvim_set_option_value("filetype", "diff", { buf = self.state.bufnr })
+				end,
+			}),
+
 			attach_mappings = function(prompt_bufnr, map)
 				actions.select_default:replace(function()
 					local selection = action_state.get_selected_entry()
@@ -284,4 +301,4 @@ local function telescope_file_history()
 		:find()
 end
 
-vim.keymap.set("n", "<leader>gfh", telescope_file_history, { desc = "Telescope File History Diff" })
+vim.keymap.set("n", "<leader>gh", telescope_file_history, { desc = "Telescope File History Diff" })
