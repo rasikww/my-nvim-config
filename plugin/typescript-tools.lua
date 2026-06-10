@@ -14,4 +14,10 @@ require("typescript-tools").setup({
 			filetypes = { "javascriptreact", "typescriptreact" },
 		},
 	},
+	spawn_with_args = {
+		-- Prevents loading massive global structures for files outside root tsconfig
+		"--useInferredProjectPerProjectRoot",
+		-- Stops the server from spinning up tasks on background file edits
+		"--noGetErrOnBackgroundUpdate",
+	},
 })
