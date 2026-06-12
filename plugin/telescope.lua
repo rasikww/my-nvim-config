@@ -77,6 +77,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 			-- pickers = {}
 			pickers = {
 				find_files = {
+					hidden = true,
 					mappings = {
 						i = {
 							["<CR>"] = custom_enter_function,
@@ -98,6 +99,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 					},
 				},
 				oldfiles = {
+					hidden = true,
 					mappings = {
 						i = {
 							["<CR>"] = custom_enter_function,
@@ -110,6 +112,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 					},
 				},
 				search_history = {
+					hidden = true,
 					mappings = {
 						i = {
 							["<CR>"] = custom_enter_function,
@@ -122,6 +125,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 					},
 				},
 				live_grep = {
+					hidden = true,
 					mappings = {
 						i = {
 							["<CR>"] = custom_enter_function,
