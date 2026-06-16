@@ -1,9 +1,13 @@
 vim.pack.add({
 	"https://github.com/stevearc/conform.nvim",
 })
+vim.g.auto_format_enabled = true
 require("conform").setup({
 	notify_on_error = false,
 	format_on_save = function(bufnr)
+		if not vim.g.auto_format_enabled then
+			return nil
+		end
 		-- Disable "format_on_save lsp_fallback" for languages that don't
 		-- have a well standardized coding style. You can add additional
 		-- languages here or re-enable it for the disabled ones.
@@ -76,3 +80,9 @@ require("conform").setup({
 vim.keymap.set("n", "<leader>f", function()
 	require("conform").format({ async = true, lsp_format = "fallback" })
 end, { desc = "[F]ormat buffer" })
+
+vim.keymap.set("n", "<leader>tf", function()
+	vim.g.auto_format_enabled = not vim.g.auto_format_enabled
+	local status = vim.g.auto_format_enabled and "enabled" or "disabled"
+	vim.notify("Auto-format on save: " .. status, vim.log.levels.INFO)
+end, { desc = "[T]oggle [F]ormat on save" })
