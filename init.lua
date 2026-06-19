@@ -628,3 +628,84 @@ vim.keymap.set("n", "<leader>pa", function()
 		end,
 	})
 end, { desc = "[P]roject [A]ll files changed exclusively in current branch" })
+
+-- Diff a quick selection of 2 texts
+local quick_diff_state = {
+	first_buf = nil,
+	second_buf = nil,
+}
+
+local function quick_diff_two()
+	-- 1. Grab visual selection coordinates
+	local start_pos = vim.fn.getpos("v")
+	local end_pos = vim.fn.getpos(".")
+
+	local start_row, start_col = start_pos[2], start_pos[3]
+	local end_row, end_col = end_pos[2], end_pos[3]
+	if start_row > end_row then
+		start_row, end_row = end_row, start_row
+		start_col, end_col = end_col, start_col
+	end
+
+	-- 2. Extract text and clear visual mode highlight
+	local lines = vim.api.nvim_buf_get_text(0, start_row - 1, start_col - 1, end_row - 1, end_col, {})
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
+
+	-- 3. Check if we are caching or comparing
+	if quick_diff_state.first_buf == nil or not vim.api.nvim_buf_is_valid(quick_diff_state.first_buf) then
+		-- Clean wipe old scratch buffers if they exist
+		if quick_diff_state.first_buf and vim.api.nvim_buf_is_valid(quick_diff_state.first_buf) then
+			pcall(vim.api.nvim_buf_delete, quick_diff_state.first_buf, { force = true })
+		end
+		if quick_diff_state.second_buf and vim.api.nvim_buf_is_valid(quick_diff_state.second_buf) then
+			pcall(vim.api.nvim_buf_delete, quick_diff_state.second_buf, { force = true })
+		end
+
+		-- Create first unlisted scratch buffer
+		quick_diff_state.first_buf = vim.api.nvim_create_buf(false, true)
+		vim.api.nvim_buf_set_lines(quick_diff_state.first_buf, 0, -1, false, lines)
+
+		-- Use a unique timestamp to completely avoid E95 name collisions
+		pcall(vim.api.nvim_buf_set_name, quick_diff_state.first_buf, "Diff-1-" .. os.time())
+
+		print("First block stashed. Select second block and hit mapping again.")
+	else
+		-- Create second unlisted scratch buffer
+		quick_diff_state.second_buf = vim.api.nvim_create_buf(false, true)
+		vim.api.nvim_buf_set_lines(quick_diff_state.second_buf, 0, -1, false, lines)
+		pcall(vim.api.nvim_buf_set_name, quick_diff_state.second_buf, "Diff-2-" .. os.time())
+
+		-- Open clean tab view
+		vim.cmd("tabnew")
+
+		-- Force linematch here so Neovim actually calculates precise word differences
+		vim.opt_local.diffopt = "internal,filler,closeoff,linematch:60"
+		vim.api.nvim_set_current_buf(quick_diff_state.first_buf)
+		vim.cmd("diffthis")
+
+		vim.cmd("vsplit")
+		vim.opt_local.diffopt = "internal,filler,closeoff,linematch:60"
+		vim.api.nvim_set_current_buf(quick_diff_state.second_buf)
+		vim.cmd("diffthis")
+
+		-- Completely reset state trackers so the next execution is treated as entirely fresh
+		quick_diff_state.first_buf = nil
+		print("Comparing selections!")
+	end
+end
+
+-- Keymap (Visual Mode)
+vim.keymap.set("v", "<leader>hq", quick_diff_two, { desc = "[q]uick Diff 2 Blocks" })
+
+--- High-visibility Diff Highlights tailored to cut through Catppuccin
+local function apply_diff_highlights()
+	-- vim.api.nvim_set_hl(0, "DiffAdd", { background = "#2b382c", foreground = "#a6e3a1" })
+	-- vim.api.nvim_set_hl(0, "DiffDelete", { background = "#3f2d31", foreground = "#f38ba8" })
+	-- vim.api.nvim_set_hl(0, "DiffChange", { background = "#313244", foreground = "#cdd6f4" })
+	vim.api.nvim_set_hl(0, "DiffText", { background = "#1D3380" })
+end
+
+apply_diff_highlights()
+vim.api.nvim_create_autocmd("ColorScheme", {
+	callback = apply_diff_highlights,
+})
