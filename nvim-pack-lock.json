@@ -4,6 +4,10 @@
       "rev": "4d229141546290746c82ac90f5afc2786865b5f3",
       "src": "https://github.com/ThePrimeagen/99"
     },
+    "Comment.nvim": {
+      "rev": "e30b7f2008e52442154b66f7c519bfd2f1e32acb",
+      "src": "https://github.com/numToStr/Comment.nvim"
+    },
     "better-type-hover": {
       "rev": "c91a5406775f9379a1abc16a869935beba13cfc2",
       "src": "https://github.com/Sebastian-Nielsen/better-type-hover"
@@ -117,6 +121,10 @@
     "nvim-ts-autotag": {
       "rev": "8e1c0a389f20bf7f5b0dd0e00306c1247bda2595",
       "src": "https://github.com/windwp/nvim-ts-autotag"
+    },
+    "nvim-ts-context-commentstring": {
+      "rev": "6141a40173c6efa98242dc951ed4b6f892c97027",
+      "src": "https://github.com/JoosepAlviste/nvim-ts-context-commentstring"
     },
     "nvim-web-devicons": {
       "rev": "7d8dad2c837fcdf2e65997e68657c1a21c568074",
