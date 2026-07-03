@@ -44,7 +44,8 @@ require('which-key').setup({
 
       -- Document existing key chains
       spec = {
-        { '<leader>s', group = '[S]earch' },
+		{ '<leader>s', group = '[S]earch' },
+		{ '<leader>si', desc = 'Lucide Icons' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>b', group = '[B]ufferline', mode = { 'n' } },
