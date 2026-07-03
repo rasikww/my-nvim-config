@@ -109,6 +109,33 @@ vim.api.nvim_create_autocmd("VimEnter", {
 			local action_state = require("telescope.actions.state")
 			local previewers = require("telescope.previewers")
 
+			local has_chafa = vim.fn.executable("chafa") == 1
+			local has_magick = vim.fn.executable("magick") == 1
+			local can_preview = has_chafa and has_magick
+			local previewer = can_preview and previewers.new_termopen_previewer({
+				get_command = function(entry)
+					local cmd = ('magick convert "%s" png:- 2>nul | chafa --symbols=block --size=80x20 -')
+						:format(entry.value.svg_path)
+					return { "cmd", "/c", cmd }
+				end,
+			}) or previewers.new_buffer_previewer({
+				title = "SVG Preview",
+				define_preview = function(self, entry)
+					local icon = entry.value
+					local header_lines = {
+						"// Component: " .. icon.component,
+						"// Icon:      " .. icon.name,
+						"",
+					}
+					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, header_lines)
+					if vim.fn.filereadable(icon.svg_path) == 1 then
+						local svg_lines = vim.fn.readfile(icon.svg_path)
+						vim.api.nvim_buf_set_lines(self.state.bufnr, #header_lines, -1, false, svg_lines)
+					end
+					vim.api.nvim_set_option_value("filetype", "xml", { buf = self.state.bufnr })
+				end,
+			})
+
 			pickers
 				.new({}, {
 					prompt_title = "Lucide Icons",
@@ -123,25 +150,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 						end,
 					}),
 					sorter = conf.generic_sorter({}),
-					previewer = previewers.new_buffer_previewer({
-						title = "SVG Preview",
-						define_preview = function(self, entry)
-							local icon = entry.value
-							local header_lines = {
-								"// Component: " .. icon.component,
-								"// Icon:      " .. icon.name,
-								"",
-							}
-							vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, header_lines)
-
-							if vim.fn.filereadable(icon.svg_path) == 1 then
-								local svg_lines = vim.fn.readfile(icon.svg_path)
-								vim.api.nvim_buf_set_lines(self.state.bufnr, #header_lines, -1, false, svg_lines)
-							end
-
-							vim.api.nvim_set_option_value("filetype", "xml", { buf = self.state.bufnr })
-						end,
-					}),
+					previewer = previewer,
 					attach_mappings = function(prompt_bufnr)
 						actions.select_default:replace(function()
 							local selection = action_state.get_selected_entry()
