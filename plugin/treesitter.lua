@@ -24,6 +24,7 @@ local ensure_installed = {
 	"python",
 	"json",
 	"yaml",
+	"zig", -- for zig if gcc cannot build it clone the "https://github.com/tree-sitter-grammars/tree-sitter-zig" repo and run "zig cc -shared -o zig.so -O2 src/parser.c -I src" then copy zig.so file to the "neovim_data_directory/site/parser" and copy queries scm files to "neovim_data_directory/site/queries/zig"
 }
 
 vim.pack.add({

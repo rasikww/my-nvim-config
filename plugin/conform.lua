@@ -78,7 +78,12 @@ require("conform").setup({
 })
 
 vim.keymap.set("n", "<leader>f", function()
-	require("conform").format({ async = true, lsp_format = "fallback" })
+	local filetype = vim.bo.filetype
+	if filetype == "zig" or filetype == "zon" then
+		vim.lsp.buf.format({ async = false })
+	else
+		require("conform").format({ async = true, lsp_format = "fallback" })
+	end
 end, { desc = "[F]ormat buffer" })
 
 vim.keymap.set("n", "<leader>tf", function()
@@ -86,3 +91,14 @@ vim.keymap.set("n", "<leader>tf", function()
 	local status = vim.g.auto_format_enabled and "enabled" or "disabled"
 	vim.notify("Auto-format on save: " .. status, vim.log.levels.INFO)
 end, { desc = "[T]oggle [F]ormat on save" })
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+	pattern = { "*.zig", "*.zon" },
+	callback = function()
+		-- Only format if the global flag is true (or nil, assuming enabled by default)
+		if vim.g.auto_format_enabled ~= false then
+			vim.lsp.buf.format({ async = false })
+		end
+	end,
+	desc = "Auto-format Zig files on save",
+})
