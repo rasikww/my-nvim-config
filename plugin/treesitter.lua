@@ -1,9 +1,22 @@
-vim.env.CC = vim.fn.exepath("gcc") .. " cc"
+-- vim.env.CC = vim.fn.exepath("gcc") .. " cc"
+-- vim.env.CC = "zig cc"
+vim.env.PATH = "C:\\msys64\\ucrt64\\bin;" .. vim.env.PATH
+vim.env.CC = "gcc"
+vim.env.CXX = "g++"
+
+-- 3. Fix the Windows extended long-path bug (\\?\C:\...) for MSYS2
+local tmp = "C:\\Temp"
+if vim.fn.isdirectory(tmp) == 0 then
+	vim.fn.mkdir(tmp, "p")
+end
+vim.env.TEMP = tmp
+vim.env.TMP = tmp
 --for windows make sure to install MSYS2 using winget and then gcc using MSYS2 UCRT64
 --and then add the gcc to the path variable of the environment
 local ensure_installed = {
 	"bash",
 	"c",
+	"cpp",
 	"css",
 	"dart",
 	"diff",
@@ -12,6 +25,7 @@ local ensure_installed = {
 	"html",
 	"lua",
 	"luadoc",
+	"make",
 	"markdown",
 	"markdown_inline",
 	"query",
