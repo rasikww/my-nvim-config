@@ -629,6 +629,39 @@ vim.keymap.set("n", "<leader>pa", function()
 	})
 end, { desc = "[P]roject [A]ll files changed exclusively in current branch" })
 
+-- Show unstaged (tracked) changes, preview the diff instead of the file
+vim.keymap.set("n", "<leader>pu", function()
+	local notify = vim.notify
+
+	local finders = require("telescope.finders")
+	local previewers = require("telescope.previewers")
+	local pickers = require("telescope.pickers")
+	local conf = require("telescope.config").values
+
+	if vim.fn.system("git rev-parse --is-inside-work-tree"):find("true") == nil then
+		notify("Not in a git repository", vim.log.levels.WARN, { title = "Git Diff" })
+		return
+	end
+
+	pickers
+		.new({}, {
+			prompt_title = "Unstaged changes",
+			finder = finders.new_oneshot_job({ "git", "diff", "--name-only" }),
+			sorter = conf.generic_sorter({}),
+
+			-- Live diff preview engine, same pattern as telescope_file_history
+			previewer = previewers.new_buffer_previewer({
+				title = "Git Diff Preview",
+				define_preview = function(self, entry, status)
+					local diff_output = vim.fn.systemlist({ "git", "diff", "--", entry.value })
+					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, diff_output)
+					vim.api.nvim_set_option_value("filetype", "diff", { buf = self.state.bufnr })
+				end,
+			}),
+		})
+		:find()
+end, { desc = "[P]roject [U]nstaged changes (diff preview)" })
+
 -- Diff a quick selection of 2 texts
 local quick_diff_state = {
 	first_buf = nil,
