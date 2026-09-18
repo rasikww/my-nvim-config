@@ -629,7 +629,7 @@ vim.keymap.set("n", "<leader>pa", function()
 	})
 end, { desc = "[P]roject [A]ll files changed exclusively in current branch" })
 
--- Show unstaged (tracked) changes, preview the diff instead of the file
+-- Show unstaged & untracked changes, preview the diff instead of the file
 vim.keymap.set("n", "<leader>pu", function()
 	local notify = vim.notify
 
@@ -645,8 +645,8 @@ vim.keymap.set("n", "<leader>pu", function()
 
 	pickers
 		.new({}, {
-			prompt_title = "Unstaged changes",
-			finder = finders.new_oneshot_job({ "git", "diff", "--name-only" }),
+			prompt_title = "Unstaged & untracked changes",
+			finder = finders.new_oneshot_job({ "git", "ls-files", "-m", "-o", "--exclude-standard" }),
 			sorter = conf.generic_sorter({}),
 
 			-- Live diff preview engine, same pattern as telescope_file_history
@@ -654,13 +654,17 @@ vim.keymap.set("n", "<leader>pu", function()
 				title = "Git Diff Preview",
 				define_preview = function(self, entry, status)
 					local diff_output = vim.fn.systemlist({ "git", "diff", "--", entry.value })
+					-- Untracked files are not in the index, so the diff is empty: render them as a new-file diff
+					if #diff_output == 0 and vim.fn.filereadable(entry.value) == 1 then
+						diff_output = vim.fn.systemlist({ "git", "diff", "--no-index", "--", "/dev/null", entry.value })
+					end
 					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, diff_output)
 					vim.api.nvim_set_option_value("filetype", "diff", { buf = self.state.bufnr })
 				end,
 			}),
 		})
 		:find()
-end, { desc = "[P]roject [U]nstaged changes (diff preview)" })
+end, { desc = "[P]roject [U]nstaged & untracked changes (diff preview)" })
 
 -- Diff a quick selection of 2 texts
 local quick_diff_state = {
