@@ -306,3 +306,130 @@ local function telescope_file_history()
 end
 
 vim.keymap.set("n", "<leader>gh", telescope_file_history, { desc = "Telescope File History Diff" })
+
+local function telescope_branch_commits()
+	local ok, pickers = pcall(require, "telescope.pickers")
+	if not ok then
+		vim.notify("Telescope is not fully loaded yet", vim.log.levels.ERROR)
+		return
+	end
+
+	if vim.fn.system("git rev-parse --is-inside-work-tree"):find("true") == nil then
+		vim.notify("Not in a git repository", vim.log.levels.WARN, { title = "Git History" })
+		return
+	end
+
+	local finders = require("telescope.finders")
+	local conf = require("telescope.config").values
+	local actions = require("telescope.actions")
+	local action_state = require("telescope.actions.state")
+	local previewers = require("telescope.previewers")
+
+	local log_output =
+		vim.fn.systemlist('git log --pretty=format:"%h|%ad|%s" --date=format:"%Y-%m-%d %H:%M" -n 300')
+
+	if vim.v.shell_error ~= 0 or #log_output == 0 then
+		vim.notify("No commits found on the current branch", vim.log.levels.WARN, { title = "Git History" })
+		return
+	end
+
+	local function open_commit_files(commit_hash)
+		local file_output = vim.fn.systemlist("git show --name-only --pretty=format: " .. commit_hash)
+		local files = {}
+		for _, file in ipairs(file_output) do
+			if file ~= "" then
+				table.insert(files, file)
+			end
+		end
+
+		if #files == 0 then
+			vim.notify("No files in commit " .. commit_hash, vim.log.levels.WARN, { title = "Git History" })
+			return
+		end
+
+		pickers
+			.new({}, {
+				prompt_title = "Files in " .. commit_hash .. " (" .. #files .. " files)",
+				finder = finders.new_table({ results = files }),
+				sorter = conf.generic_sorter({}),
+				previewer = previewers.new_buffer_previewer({
+					title = "Commit File Diff",
+					define_preview = function(self, entry, _)
+						local diff_output =
+							vim.fn.systemlist(string.format("git show %s -- %s", commit_hash, vim.fn.shellescape(entry.value)))
+						vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, diff_output)
+						vim.api.nvim_set_option_value("filetype", "diff", { buf = self.state.bufnr })
+					end,
+				}),
+				attach_mappings = function(prompt_bufnr)
+					actions.select_default:replace(function()
+						local selection = action_state.get_selected_entry()
+						actions.close(prompt_bufnr)
+
+						if not selection then
+							return
+						end
+
+						local path = selection.value
+
+						if vim.fn.filereadable(path) == 0 then
+							local repo_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
+							if repo_root and repo_root ~= "" and vim.fn.filereadable(repo_root .. "/" .. path) == 1 then
+								path = repo_root .. "/" .. path
+							end
+						end
+
+						if vim.fn.filereadable(path) == 0 then
+							vim.notify(path .. " was deleted or moved since this commit", vim.log.levels.WARN, {
+								title = "Git History",
+							})
+							return
+						end
+
+						vim.cmd("edit " .. vim.fn.fnameescape(path))
+					end)
+					return true
+				end,
+			})
+			:find()
+	end
+
+	pickers
+		.new({}, {
+			prompt_title = "Commits (current branch)",
+			finder = finders.new_table({ results = log_output }),
+			sorter = conf.generic_sorter({}),
+			previewer = previewers.new_buffer_previewer({
+				title = "Commit Diff Preview",
+				define_preview = function(self, entry, _)
+					local commit_hash = string.match(entry.value, "^(%x+)")
+					if not commit_hash then
+						return
+					end
+
+					local diff_output = vim.fn.systemlist("git show --stat --patch " .. commit_hash)
+					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, diff_output)
+					vim.api.nvim_set_option_value("filetype", "diff", { buf = self.state.bufnr })
+				end,
+			}),
+			attach_mappings = function(prompt_bufnr)
+				actions.select_default:replace(function()
+					local selection = action_state.get_selected_entry()
+					actions.close(prompt_bufnr)
+
+					if not selection then
+						return
+					end
+
+					local commit_hash = string.match(selection.value, "^(%x+)")
+					if commit_hash then
+						open_commit_files(commit_hash)
+					end
+				end)
+				return true
+			end,
+		})
+		:find()
+end
+
+vim.keymap.set("n", "<leader>ph", telescope_branch_commits, { desc = "[P]roject commit [H]istory" })
